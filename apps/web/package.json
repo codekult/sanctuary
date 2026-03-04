@@ -28,18 +28,21 @@
     "superjson": "^2.2.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.0",
+    "@next/eslint-plugin-next": "^15.2.0",
     "@sanctuary/prettier-config": "workspace:*",
     "@sanctuary/tsconfig": "workspace:*",
+    "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@eslint/eslintrc": "^3.3.0",
     "eslint": "^9.20.0",
     "eslint-config-next": "^15.2.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-jsx-a11y": "^6.10.0",
     "eslint-plugin-import": "^2.31.0",
-    "@next/eslint-plugin-next": "^15.2.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
     "typescript": "^5.7.0"
   },
   "prettier": "@sanctuary/prettier-config"
