@@ -13,6 +13,7 @@ import { trpc } from "@/lib/trpc/client";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { INaturalistSearchDialog } from "@/components/inaturalist-search-dialog";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -259,37 +260,7 @@ export default function TaxaListPage() {
         </>
       )}
 
-      {importDialogOpen && (
-        <INaturalistSearchDialogLazy open={importDialogOpen} onOpenChange={setImportDialogOpen} />
-      )}
+      <INaturalistSearchDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
     </>
-  );
-}
-
-// Lazy placeholder — will be implemented in Step 10
-function INaturalistSearchDialogLazy({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  // Placeholder until the real dialog is built
-  return (
-    <div>
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => onOpenChange(false)}
-        >
-          <div className="rounded-lg bg-background p-6" onClick={(e) => e.stopPropagation()}>
-            <p>iNaturalist import dialog coming soon...</p>
-            <Button className="mt-4" onClick={() => onOpenChange(false)}>
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
   );
 }
