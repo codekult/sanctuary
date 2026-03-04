@@ -14,7 +14,8 @@ Each proposal should include:
 
 ## Index
 
-| #   | Title                                             | Status      |
-| --- | ------------------------------------------------- | ----------- |
-| 001 | [Product Proposal](./001-product-proposal.md)     | Accepted    |
-| 002 | [Phase 1: Foundation](./002-phase1-foundation.md) | Implemented |
+| #   | Title                                                                       | Status      |
+| --- | --------------------------------------------------------------------------- | ----------- |
+| 001 | [Product Proposal](./001-product-proposal.md)                               | Accepted    |
+| 002 | [Phase 1: Foundation](./002-phase1-foundation.md)                           | Implemented |
+| 003 | [Phase 2a: Backoffice Shell + Taxa](./003-phase2a-backoffice-shell-taxa.md) | Proposed    |
