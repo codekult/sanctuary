@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { Leaf, Loader2, Search } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
@@ -48,10 +48,12 @@ export function INaturalistSearchDialog({ open, onOpenChange }: INaturalistSearc
     },
   });
 
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
   const handleSearchChange = useCallback((value: string) => {
     setSearchQuery(value);
-    const timeout = setTimeout(() => setDebouncedQuery(value), 300);
-    return () => clearTimeout(timeout);
+    clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => setDebouncedQuery(value), 300);
   }, []);
 
   function handleImport(externalId: string) {

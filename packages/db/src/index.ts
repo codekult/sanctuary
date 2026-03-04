@@ -1,3 +1,4 @@
 export { db } from "./client.js";
 export type { Database } from "./client.js";
 export * from "./schema/index.js";
+export { eq, and, or, sql, ilike, asc, desc } from "drizzle-orm";

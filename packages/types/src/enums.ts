@@ -12,6 +12,18 @@ export const taxonRankEnum = z.enum([
   "variety",
 ]);
 export type TaxonRank = z.infer<typeof taxonRankEnum>;
+export const TAXON_RANKS = taxonRankEnum.options;
+
+export const KINGDOMS = [
+  "Animalia",
+  "Plantae",
+  "Fungi",
+  "Chromista",
+  "Protozoa",
+  "Bacteria",
+  "Archaea",
+] as const;
+export type Kingdom = (typeof KINGDOMS)[number];
 
 export const individualStatusEnum = z.enum(["alive", "dead", "unknown", "removed"]);
 export type IndividualStatus = z.infer<typeof individualStatusEnum>;

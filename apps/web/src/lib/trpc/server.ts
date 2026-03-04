@@ -1,7 +1,6 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { eq } from "drizzle-orm";
 import { appRouter, createContext } from "@sanctuary/api";
-import { db, users } from "@sanctuary/db";
+import { db, users, eq } from "@sanctuary/db";
 import { createSupabaseServerClient } from "../supabase/server";
 
 async function syncUser(id: string, email: string) {

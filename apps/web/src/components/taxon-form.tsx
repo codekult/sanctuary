@@ -23,22 +23,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { KINGDOMS, TAXON_RANKS } from "@sanctuary/types";
 
 const taxonFormSchema = z.object({
   scientificName: z.string().min(1),
   commonNameEn: z.string().nullable(),
   commonNameEs: z.string().nullable(),
-  taxonRank: z.enum([
-    "kingdom",
-    "phylum",
-    "class",
-    "order",
-    "family",
-    "genus",
-    "species",
-    "subspecies",
-    "variety",
-  ]),
+  taxonRank: z.enum(TAXON_RANKS),
   kingdom: z.string().min(1),
   phylum: z.string().nullable(),
   class: z.string().nullable(),
@@ -55,9 +46,6 @@ const taxonFormSchema = z.object({
 });
 
 type TaxonFormValues = z.infer<typeof taxonFormSchema>;
-
-const kingdoms = ["Animalia", "Plantae", "Fungi", "Chromista", "Protozoa", "Bacteria", "Archaea"];
-const rankOptions = taxonFormSchema.shape.taxonRank.options;
 
 interface TaxonFormProps {
   defaultValues?: Partial<TaxonFormValues>;
@@ -79,6 +67,7 @@ export function TaxonForm({
   const [showTaxonomyDetails, setShowTaxonomyDetails] = useState(false);
 
   const form = useForm<TaxonFormValues>({
+    // Type instantiation too deep with nullable fields — known @hookform/resolvers + zod issue
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(taxonFormSchema as any) as any,
     defaultValues: {
@@ -169,7 +158,7 @@ export function TaxonForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {kingdoms.map((k) => (
+                    {KINGDOMS.map((k) => (
                       <SelectItem key={k} value={k}>
                         {k}
                       </SelectItem>
@@ -193,7 +182,7 @@ export function TaxonForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {rankOptions.map((r) => (
+                    {TAXON_RANKS.map((r) => (
                       <SelectItem key={r} value={r}>
                         {r}
                       </SelectItem>

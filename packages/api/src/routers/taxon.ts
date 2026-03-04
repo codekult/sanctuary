@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { eq, ilike, or, sql } from "drizzle-orm";
+import { eq, ilike, or, sql, asc } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { taxa, individuals } from "@sanctuary/db/schema";
-import { createTaxonSchema, updateTaxonSchema } from "@sanctuary/types";
+import { createTaxonSchema, updateTaxonSchema, taxonRankEnum } from "@sanctuary/types";
 import { router, publicProcedure, protectedProcedure } from "../trpc.js";
 
 function buildTaxaConditions(input: { kingdom?: string; rank?: string; search?: string }) {
@@ -40,7 +41,13 @@ export const taxonRouter = router({
       const where = buildTaxaConditions(input);
 
       const [items, [countResult]] = await Promise.all([
-        ctx.db.select().from(taxa).where(where).limit(input.limit).offset(input.offset),
+        ctx.db
+          .select()
+          .from(taxa)
+          .where(where)
+          .orderBy(asc(taxa.scientificName))
+          .limit(input.limit)
+          .offset(input.offset),
         ctx.db
           .select({ count: sql<number>`count(*)::int` })
           .from(taxa)
@@ -88,12 +95,18 @@ export const taxonRouter = router({
       return { success: true };
     }),
 
-  searchExternal: publicProcedure
+  searchExternal: protectedProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input }) => {
       const response = await fetch(
         `https://api.inaturalist.org/v1/taxa/autocomplete?q=${encodeURIComponent(input.query)}&per_page=10`,
       );
+      if (!response.ok) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Failed to search iNaturalist. Please try again later.",
+        });
+      }
       const data = (await response.json()) as INatAutocompleteResponse;
       return data.results.map(mapINatTaxon);
     }),
@@ -102,12 +115,45 @@ export const taxonRouter = router({
     .input(z.object({ externalId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const response = await fetch(`https://api.inaturalist.org/v1/taxa/${input.externalId}`);
+      if (!response.ok) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Failed to fetch taxon from iNaturalist. Please try again later.",
+        });
+      }
       const data = (await response.json()) as INatTaxonResponse;
       const result = data.results[0];
       if (!result) return null;
 
+      // Check for existing taxon with same external ID
+      const [existing] = await ctx.db
+        .select({ id: taxa.id })
+        .from(taxa)
+        .where(
+          sql`${taxa.externalId} = ${String(result.id)} AND ${taxa.externalSource} = 'inaturalist'`,
+        );
+      if (existing) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This taxon has already been imported.",
+        });
+      }
+
       const mapped = mapINatTaxon(result);
-      const [taxon] = await ctx.db.insert(taxa).values(mapped).returning();
+
+      // Validate that the rank is supported
+      const rankParse = taxonRankEnum.safeParse(mapped.taxonRank);
+      if (!rankParse.success) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Unsupported taxon rank "${mapped.taxonRank}". Only standard ranks are supported.`,
+        });
+      }
+
+      const [taxon] = await ctx.db
+        .insert(taxa)
+        .values({ ...mapped, taxonRank: rankParse.data })
+        .returning();
       return taxon;
     }),
 });

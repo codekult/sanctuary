@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   useReactTable,
@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { KINGDOMS, TAXON_RANKS } from "@sanctuary/types";
 
 interface TaxonRow {
   id: string;
@@ -45,19 +46,6 @@ interface TaxonRow {
 
 const PAGE_SIZE = 25;
 
-const kingdoms = ["Animalia", "Plantae", "Fungi", "Chromista", "Protozoa", "Bacteria", "Archaea"];
-const ranks = [
-  "kingdom",
-  "phylum",
-  "class",
-  "order",
-  "family",
-  "genus",
-  "species",
-  "subspecies",
-  "variety",
-];
-
 export default function TaxaListPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
@@ -69,15 +57,15 @@ export default function TaxaListPage() {
     pageSize: PAGE_SIZE,
   });
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Debounce search
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
-    const timeout = setTimeout(() => {
+    clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
       setDebouncedSearch(value);
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     }, 300);
-    return () => clearTimeout(timeout);
   }, []);
 
   const { data, isLoading } = trpc.taxon.list.useQuery({
@@ -212,7 +200,7 @@ export default function TaxaListPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All kingdoms</SelectItem>
-                {kingdoms.map((k) => (
+                {KINGDOMS.map((k) => (
                   <SelectItem key={k} value={k}>
                     {k}
                   </SelectItem>
@@ -231,7 +219,7 @@ export default function TaxaListPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All ranks</SelectItem>
-                {ranks.map((r) => (
+                {TAXON_RANKS.map((r) => (
                   <SelectItem key={r} value={r}>
                     {r}
                   </SelectItem>
