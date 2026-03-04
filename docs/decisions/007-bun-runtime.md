@@ -9,6 +9,7 @@
 The developer environment has Bun installed but not Node.js. Rather than installing Node.js, we evaluated using Bun as both the JavaScript runtime and package manager.
 
 Options considered:
+
 - **Install Node.js + pnpm** — the originally planned stack. Proven, widely documented. Requires additional installation.
 - **Bun** — already installed. Built-in package manager (replaces pnpm), faster installs, faster runtime, built-in test runner. Works with Turborepo workspaces, Next.js, and Drizzle.
 

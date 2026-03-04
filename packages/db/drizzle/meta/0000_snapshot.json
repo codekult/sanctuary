@@ -97,12 +97,8 @@
           "name": "individuals_taxon_id_taxa_id_fk",
           "tableFrom": "individuals",
           "tableTo": "taxa",
-          "columnsFrom": [
-            "taxon_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["taxon_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -194,12 +190,8 @@
           "name": "media_observation_id_observations_id_fk",
           "tableFrom": "media",
           "tableTo": "observations",
-          "columnsFrom": [
-            "observation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["observation_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -207,12 +199,8 @@
           "name": "media_individual_id_individuals_id_fk",
           "tableFrom": "media",
           "tableTo": "individuals",
-          "columnsFrom": [
-            "individual_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["individual_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -322,12 +310,8 @@
           "name": "observations_taxon_id_taxa_id_fk",
           "tableFrom": "observations",
           "tableTo": "taxa",
-          "columnsFrom": [
-            "taxon_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["taxon_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -335,12 +319,8 @@
           "name": "observations_individual_id_individuals_id_fk",
           "tableFrom": "observations",
           "tableTo": "individuals",
-          "columnsFrom": [
-            "individual_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["individual_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -348,12 +328,8 @@
           "name": "observations_observer_id_users_id_fk",
           "tableFrom": "observations",
           "tableTo": "users",
-          "columnsFrom": [
-            "observer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["observer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -476,12 +452,8 @@
           "name": "phenology_events_individual_id_individuals_id_fk",
           "tableFrom": "phenology_events",
           "tableTo": "individuals",
-          "columnsFrom": [
-            "individual_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["individual_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -489,12 +461,8 @@
           "name": "phenology_events_observation_id_observations_id_fk",
           "tableFrom": "phenology_events",
           "tableTo": "observations",
-          "columnsFrom": [
-            "observation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["observation_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -502,12 +470,8 @@
           "name": "phenology_events_event_type_id_phenology_event_types_id_fk",
           "tableFrom": "phenology_events",
           "tableTo": "phenology_event_types",
-          "columnsFrom": [
-            "event_type_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["event_type_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -774,9 +738,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

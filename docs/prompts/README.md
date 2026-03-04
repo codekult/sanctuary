@@ -14,6 +14,6 @@ The prompt arg is a short pointer (1-2 sentences). Claude reads the full spec fr
 
 ## Index
 
-| Phase | Prompt File | Status |
-|---|---|---|
+| Phase          | Prompt File                                    | Status   |
+| -------------- | ---------------------------------------------- | -------- |
 | 1 — Foundation | [phase1-foundation.md](./phase1-foundation.md) | Complete |

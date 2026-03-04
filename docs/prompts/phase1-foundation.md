@@ -3,6 +3,7 @@
 > **Status**: Complete (implemented 2026-03-04)
 >
 > Invoke with:
+>
 > ```
 > /ralph-loop Read and implement docs/prompts/phase1-foundation.md exactly. Assess progress each iteration then continue from where you left off. --max-iterations 30 --completion-promise "PHASE1_COMPLETE"
 > ```
@@ -42,12 +43,14 @@ Do NOT output the completion promise until every item in the Quality Checklist p
 Work through these sequentially. Skip steps that are already complete from previous iterations.
 
 ### Step 1: Monorepo Scaffolding
+
 - Initialize Turborepo with **bun workspaces** (not pnpm)
 - Create the directory structure from `docs/proposals/002-phase1-foundation.md` section 1
 - Shared TypeScript config (strict mode) and ESLint config
 - **Verify**: `bun install` succeeds, `bun run build` succeeds across all packages
 
 ### Step 2: Shared Types Package (`packages/types`)
+
 - All Zod schemas matching the DB schema in proposal 002 section 2
 - All shared enums (taxon rank, individual status, life stage, observation status, media type, user role, phenology applies-to)
 - Inferred TypeScript types exported from each Zod schema
@@ -55,6 +58,7 @@ Work through these sequentially. Skip steps that are already complete from previ
 - **Verify**: `bun run build` in packages/types succeeds with zero errors
 
 ### Step 3: Database Package (`packages/db`)
+
 - Drizzle ORM with Supabase Postgres connection (connection string from `DATABASE_URL` env var)
 - All table schemas matching proposal 002 section 2 exactly
 - Enums sourced from `@sanctuary/types`
@@ -65,6 +69,7 @@ Work through these sequentially. Skip steps that are already complete from previ
 - **Verify**: `bun run db:generate` creates migration, `bun run db:push` applies to Supabase without errors
 
 ### Step 4: API Package (`packages/api`)
+
 - tRPC with context (Drizzle db client + optional auth session)
 - `publicProcedure` and `protectedProcedure` middleware
 - **Coordinate stripping**: unauthenticated responses MUST have `latitude` and `longitude` set to `null` on individuals and observations. This is a privacy requirement — the property is the owner's home.
@@ -73,12 +78,14 @@ Work through these sequentially. Skip steps that are already complete from previ
 - **Verify**: `bun run build` in packages/api succeeds, TypeScript compiles clean
 
 ### Step 5: i18n Package (`packages/i18n`)
+
 - JSON locale files for EN and ES
 - Initial keys: UI labels, entity names, enum display values
 - Typed helper for accessing translations
 - **Verify**: `bun run build` succeeds
 
 ### Step 6: Next.js App (`apps/web`)
+
 - Next.js 15 with App Router, configured to run under bun
 - tRPC client connected
 - Supabase Auth (server-side session handling) using **publishable key** (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) and **secret key** (`SUPABASE_SECRET_KEY`) — NOT the legacy anon/service_role keys. See `.env.example`.
@@ -88,12 +95,14 @@ Work through these sequentially. Skip steps that are already complete from previ
 - **Verify**: `bun run build` succeeds, `bun run dev` starts without crashing
 
 ### Step 7: Expo App Shell (`apps/mobile`)
+
 - Expo project with TypeScript — shell only
 - Connected to tRPC API client from packages/api
 - No screens or navigation
 - **Verify**: `bun run typecheck` succeeds for mobile
 
 ### Step 8: Seed Script
+
 - `packages/db/src/seed.ts` per proposal 002 section 7
 - Imports real taxa from iNaturalist API
 - Creates sample individuals from whatever taxa are imported (don't hardcode species names)
@@ -101,6 +110,7 @@ Work through these sequentially. Skip steps that are already complete from previ
 - **Verify**: seed populates database (>= 10 taxa, >= 2 individuals, >= 5 observations)
 
 ### Step 9: Dev Tooling & Documentation
+
 - `.env.example` documents all required vars
 - `README.md` with: project description, prerequisites (bun), setup steps, dev commands
 - Document any learnings in `docs/learnings/`

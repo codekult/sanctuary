@@ -5,6 +5,7 @@ Feature proposals are written **before implementation** to force clear thinking 
 ## Format
 
 Each proposal should include:
+
 - **Goal**: What are we trying to achieve?
 - **Scope**: What's included and explicitly excluded?
 - **Design**: Data model changes, UI sketches, API endpoints
@@ -13,7 +14,7 @@ Each proposal should include:
 
 ## Index
 
-| # | Title | Status |
-|---|---|---|
-| 001 | [Product Proposal](./001-product-proposal.md) | Accepted |
+| #   | Title                                             | Status      |
+| --- | ------------------------------------------------- | ----------- |
+| 001 | [Product Proposal](./001-product-proposal.md)     | Accepted    |
 | 002 | [Phase 1: Foundation](./002-phase1-foundation.md) | Implemented |

@@ -27,9 +27,13 @@ export const individualRouter = router({
       if (input.taxonId) conditions.push(eq(individuals.taxonId, input.taxonId));
       if (input.status) conditions.push(eq(individuals.status, input.status));
 
-      const where = conditions.length > 0
-        ? sql`${sql.join(conditions.map((c) => sql`(${c})`), sql` AND `)}`
-        : undefined;
+      const where =
+        conditions.length > 0
+          ? sql`${sql.join(
+              conditions.map((c) => sql`(${c})`),
+              sql` AND `,
+            )}`
+          : undefined;
 
       const results = await ctx.db
         .select()
@@ -62,12 +66,10 @@ export const individualRouter = router({
       };
     }),
 
-  create: protectedProcedure
-    .input(createIndividualSchema)
-    .mutation(async ({ ctx, input }) => {
-      const [individual] = await ctx.db.insert(individuals).values(input).returning();
-      return individual;
-    }),
+  create: protectedProcedure.input(createIndividualSchema).mutation(async ({ ctx, input }) => {
+    const [individual] = await ctx.db.insert(individuals).values(input).returning();
+    return individual;
+  }),
 
   update: protectedProcedure
     .input(z.object({ id: z.string().uuid(), data: updateIndividualSchema }))

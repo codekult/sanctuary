@@ -54,16 +54,16 @@ sanctuary/
 
 ## Commands
 
-| Command | Description |
-|---|---|
-| `bun run dev` | Start all apps in development mode |
-| `bun run build` | Build all packages and apps |
-| `bun run typecheck` | Type-check all packages |
-| `bun run lint` | Lint all packages |
-| `bun run db:generate` | Generate Drizzle migration |
-| `bun run db:push` | Push schema to database |
-| `bun run db:studio` | Open Drizzle Studio |
-| `bun run seed` | Seed database with sample data |
+| Command               | Description                        |
+| --------------------- | ---------------------------------- |
+| `bun run dev`         | Start all apps in development mode |
+| `bun run build`       | Build all packages and apps        |
+| `bun run typecheck`   | Type-check all packages            |
+| `bun run lint`        | Lint all packages                  |
+| `bun run db:generate` | Generate Drizzle migration         |
+| `bun run db:push`     | Push schema to database            |
+| `bun run db:studio`   | Open Drizzle Studio                |
+| `bun run seed`        | Seed database with sample data     |
 
 ## Tech Stack
 

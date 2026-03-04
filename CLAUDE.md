@@ -22,14 +22,14 @@ See `docs/decisions/` for rationale behind each choice.
 
 ## Implementation Status
 
-| Phase | Proposal | Status |
-|---|---|---|
-| 1 — Foundation | [002](docs/proposals/002-phase1-foundation.md) | Complete |
-| 2 — Backoffice MVP | — | Not started |
-| 3 — Public Library | — | Not started |
-| 4 — Phenology | — | Not started |
-| 5 — Mobile App | — | Not started |
-| 6 — Polish & Portfolio | — | Not started |
+| Phase                  | Proposal                                       | Status      |
+| ---------------------- | ---------------------------------------------- | ----------- |
+| 1 — Foundation         | [002](docs/proposals/002-phase1-foundation.md) | Complete    |
+| 2 — Backoffice MVP     | —                                              | Not started |
+| 3 — Public Library     | —                                              | Not started |
+| 4 — Phenology          | —                                              | Not started |
+| 5 — Mobile App         | —                                              | Not started |
+| 6 — Polish & Portfolio | —                                              | Not started |
 
 ## Project Structure
 
@@ -75,6 +75,7 @@ For phases that can run unattended, use a Ralph Loop:
 3. Invoke: `/ralph-loop <short pointer to prompt file> --max-iterations N --completion-promise "PHASEX_COMPLETE"`
 
 **Prompt file conventions:**
+
 - The ralph-loop prompt arg is a short pointer (1-2 sentences). The full spec lives in `docs/prompts/`.
 - The prompt file references the proposal and spec files by path — Claude reads them on each iteration.
 - Include an **Iteration Protocol** (assess → pick next step → implement → verify).

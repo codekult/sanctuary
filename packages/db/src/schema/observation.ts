@@ -5,9 +5,13 @@ import { users } from "./user.js";
 
 export const observations = pgTable("observations", {
   id: uuid("id").primaryKey().defaultRandom(),
-  taxonId: uuid("taxon_id").notNull().references(() => taxa.id),
+  taxonId: uuid("taxon_id")
+    .notNull()
+    .references(() => taxa.id),
   individualId: uuid("individual_id").references(() => individuals.id),
-  observerId: uuid("observer_id").notNull().references(() => users.id),
+  observerId: uuid("observer_id")
+    .notNull()
+    .references(() => users.id),
   observedAt: timestamp("observed_at", { withTimezone: true }).notNull(),
   latitude: numeric("latitude", { precision: 10, scale: 7 }),
   longitude: numeric("longitude", { precision: 10, scale: 7 }),

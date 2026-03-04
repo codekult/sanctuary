@@ -10,11 +10,11 @@ export async function handleTRPC(req: Request) {
     router: appRouter,
     createContext: async () => {
       const supabase = await createSupabaseServerClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      const session = user
-        ? { userId: user.id, email: user.email! }
-        : null;
+      const session = user ? { userId: user.id, email: user.email! } : null;
 
       return createContext(db, session);
     },

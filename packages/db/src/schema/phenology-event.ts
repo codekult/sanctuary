@@ -7,7 +7,9 @@ export const phenologyEvents = pgTable("phenology_events", {
   id: uuid("id").primaryKey().defaultRandom(),
   individualId: uuid("individual_id").references(() => individuals.id),
   observationId: uuid("observation_id").references(() => observations.id),
-  eventTypeId: uuid("event_type_id").notNull().references(() => phenologyEventTypes.id),
+  eventTypeId: uuid("event_type_id")
+    .notNull()
+    .references(() => phenologyEventTypes.id),
   observedAt: date("observed_at").notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

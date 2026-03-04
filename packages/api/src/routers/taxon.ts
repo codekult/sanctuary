@@ -29,9 +29,13 @@ export const taxonRouter = router({
         );
       }
 
-      const where = conditions.length > 0
-        ? sql`${sql.join(conditions.map((c) => sql`(${c})`), sql` AND `)}`
-        : undefined;
+      const where =
+        conditions.length > 0
+          ? sql`${sql.join(
+              conditions.map((c) => sql`(${c})`),
+              sql` AND `,
+            )}`
+          : undefined;
 
       const results = await ctx.db
         .select()
@@ -46,10 +50,7 @@ export const taxonRouter = router({
   getById: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const [taxon] = await ctx.db
-        .select()
-        .from(taxa)
-        .where(eq(taxa.id, input.id));
+      const [taxon] = await ctx.db.select().from(taxa).where(eq(taxa.id, input.id));
 
       if (!taxon) return null;
 
@@ -61,12 +62,10 @@ export const taxonRouter = router({
       return { ...taxon, individualsCount: count?.count ?? 0 };
     }),
 
-  create: protectedProcedure
-    .input(createTaxonSchema)
-    .mutation(async ({ ctx, input }) => {
-      const [taxon] = await ctx.db.insert(taxa).values(input).returning();
-      return taxon;
-    }),
+  create: protectedProcedure.input(createTaxonSchema).mutation(async ({ ctx, input }) => {
+    const [taxon] = await ctx.db.insert(taxa).values(input).returning();
+    return taxon;
+  }),
 
   update: protectedProcedure
     .input(z.object({ id: z.string().uuid(), data: updateTaxonSchema }))
@@ -92,25 +91,20 @@ export const taxonRouter = router({
       const response = await fetch(
         `https://api.inaturalist.org/v1/taxa/autocomplete?q=${encodeURIComponent(input.query)}&per_page=10`,
       );
-      const data = await response.json() as INatAutocompleteResponse;
+      const data = (await response.json()) as INatAutocompleteResponse;
       return data.results.map(mapINatTaxon);
     }),
 
   importFromExternal: protectedProcedure
     .input(z.object({ externalId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const response = await fetch(
-        `https://api.inaturalist.org/v1/taxa/${input.externalId}`,
-      );
-      const data = await response.json() as INatTaxonResponse;
+      const response = await fetch(`https://api.inaturalist.org/v1/taxa/${input.externalId}`);
+      const data = (await response.json()) as INatTaxonResponse;
       const result = data.results[0];
       if (!result) return null;
 
       const mapped = mapINatTaxon(result);
-      const [taxon] = await ctx.db
-        .insert(taxa)
-        .values(mapped)
-        .returning();
+      const [taxon] = await ctx.db.insert(taxa).values(mapped).returning();
       return taxon;
     }),
 });
@@ -137,11 +131,9 @@ interface INatTaxonResponse {
 
 function mapINatTaxon(result: INatTaxon) {
   const ancestors = result.ancestors ?? [];
-  const findAncestor = (rank: string) =>
-    ancestors.find((a) => a.rank === rank)?.name ?? null;
+  const findAncestor = (rank: string) => ancestors.find((a) => a.rank === rank)?.name ?? null;
 
-  const spanishName =
-    result.names?.find((n) => n.locale === "es")?.name ?? null;
+  const spanishName = result.names?.find((n) => n.locale === "es")?.name ?? null;
 
   return {
     scientificName: result.name,
@@ -154,7 +146,7 @@ function mapINatTaxon(result: INatTaxon) {
     order: findAncestor("order"),
     family: findAncestor("family"),
     genus: findAncestor("genus"),
-    specificEpithet: result.rank === "species" ? result.name.split(" ")[1] ?? null : null,
+    specificEpithet: result.rank === "species" ? (result.name.split(" ")[1] ?? null) : null,
     externalId: String(result.id),
     externalSource: "inaturalist",
     descriptionEn: result.wikipedia_summary ?? null,

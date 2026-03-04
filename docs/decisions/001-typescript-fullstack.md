@@ -8,6 +8,7 @@
 Sanctuary needs a web backoffice, a public library, and a mobile app. We need to choose a primary language and ecosystem that spans all three.
 
 Options considered:
+
 - **Ruby on Rails** — excellent for rapid web development, but no native mobile story. Would require a separate stack for the mobile app and lose type sharing.
 - **Python (Django/FastAPI)** — strong backend, but same mobile gap as Rails. No shared types with a JS/TS frontend.
 - **TypeScript full-stack** — one language across web (Next.js), mobile (React Native), and API layer. Shared types, validation schemas, and business logic.

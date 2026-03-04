@@ -10,18 +10,18 @@ import {
 
 // iNaturalist taxon IDs representing diverse species
 const INAT_TAXA = [
-  47126,  // Quercus (oaks) — genus, Plantae
-  12727,  // Turdus merula (Common Blackbird) — species, Animalia
-  47219,  // Agaricus (mushrooms) — genus, Fungi
-  47158,  // Apis mellifera (Honey Bee) — species, Animalia
-  55745,  // Lavandula angustifolia (Lavender) — species, Plantae
-  3454,   // Passer domesticus (House Sparrow) — species, Animalia
-  58523,  // Olea europaea (Olive tree) — species, Plantae
+  47126, // Quercus (oaks) — genus, Plantae
+  12727, // Turdus merula (Common Blackbird) — species, Animalia
+  47219, // Agaricus (mushrooms) — genus, Fungi
+  47158, // Apis mellifera (Honey Bee) — species, Animalia
+  55745, // Lavandula angustifolia (Lavender) — species, Plantae
+  3454, // Passer domesticus (House Sparrow) — species, Animalia
+  58523, // Olea europaea (Olive tree) — species, Plantae
   119014, // Coccinella septempunctata (7-spot Ladybird) — species, Animalia
-  47125,  // Rosmarinus officinalis (Rosemary) — species, Plantae
-  48484,  // Boletus edulis (Porcini) — species, Fungi
-  4513,   // Erithacus rubecula (European Robin) — species, Animalia
-  53745,  // Ficus carica (Common Fig) — species, Plantae
+  47125, // Rosmarinus officinalis (Rosemary) — species, Plantae
+  48484, // Boletus edulis (Porcini) — species, Fungi
+  4513, // Erithacus rubecula (European Robin) — species, Animalia
+  53745, // Ficus carica (Common Fig) — species, Plantae
 ];
 
 interface INatTaxon {
@@ -49,11 +49,9 @@ async function fetchINatTaxon(id: number): Promise<INatTaxon | null> {
 
 function mapTaxon(result: INatTaxon) {
   const ancestors = result.ancestors ?? [];
-  const findAncestor = (rank: string) =>
-    ancestors.find((a) => a.rank === rank)?.name ?? null;
+  const findAncestor = (rank: string) => ancestors.find((a) => a.rank === rank)?.name ?? null;
 
-  const spanishName =
-    result.names?.find((n) => n.locale === "es")?.name ?? null;
+  const spanishName = result.names?.find((n) => n.locale === "es")?.name ?? null;
 
   return {
     scientificName: result.name,
@@ -66,8 +64,7 @@ function mapTaxon(result: INatTaxon) {
     order: findAncestor("order"),
     family: findAncestor("family"),
     genus: findAncestor("genus"),
-    specificEpithet:
-      result.rank === "species" ? (result.name.split(" ")[1] ?? null) : null,
+    specificEpithet: result.rank === "species" ? (result.name.split(" ")[1] ?? null) : null,
     externalId: String(result.id),
     externalSource: "inaturalist",
     descriptionEn: result.wikipedia_summary ?? null,
@@ -105,7 +102,9 @@ async function seed() {
     const mapped = mapTaxon(result);
     const [taxon] = await db.insert(taxa).values(mapped).returning();
     insertedTaxa.push(taxon!);
-    console.log(`  Imported: ${taxon!.scientificName} (${taxon!.commonNameEn ?? "no common name"})`);
+    console.log(
+      `  Imported: ${taxon!.scientificName} (${taxon!.commonNameEn ?? "no common name"})`,
+    );
 
     // Rate limit: be nice to iNaturalist API
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -129,9 +128,30 @@ async function seed() {
   const sampleIndividuals = [];
 
   const individualDefs = [
-    { nickname: "The Old One", descEn: "Notable specimen, first observed near the entrance.", descEs: "Espécimen notable, observado por primera vez cerca de la entrada.", lat: "37.3895", lon: "-5.9840", date: "2024-01-15" },
-    { nickname: "Garden Visitor", descEn: "Regular visitor to the garden area.", descEs: "Visitante habitual del área del jardín.", lat: "37.3890", lon: "-5.9848", date: "2024-03-10" },
-    { nickname: "Terrace Resident", descEn: "Resident near the main terrace.", descEs: "Residente cerca de la terraza principal.", lat: "37.3893", lon: "-5.9843", date: "2024-02-01" },
+    {
+      nickname: "The Old One",
+      descEn: "Notable specimen, first observed near the entrance.",
+      descEs: "Espécimen notable, observado por primera vez cerca de la entrada.",
+      lat: "37.3895",
+      lon: "-5.9840",
+      date: "2024-01-15",
+    },
+    {
+      nickname: "Garden Visitor",
+      descEn: "Regular visitor to the garden area.",
+      descEs: "Visitante habitual del área del jardín.",
+      lat: "37.3890",
+      lon: "-5.9848",
+      date: "2024-03-10",
+    },
+    {
+      nickname: "Terrace Resident",
+      descEn: "Resident near the main terrace.",
+      descEs: "Residente cerca de la terraza principal.",
+      lat: "37.3893",
+      lon: "-5.9843",
+      date: "2024-02-01",
+    },
   ];
 
   for (let i = 0; i < Math.min(individualDefs.length, insertedTaxa.length); i++) {
@@ -151,7 +171,9 @@ async function seed() {
       })
       .returning();
     sampleIndividuals.push(ind!);
-    console.log(`  Created individual: ${ind!.nickname} (${taxon.commonNameEn ?? taxon.scientificName})`);
+    console.log(
+      `  Created individual: ${ind!.nickname} (${taxon.commonNameEn ?? taxon.scientificName})`,
+    );
   }
 
   // 5. Create sample observations
@@ -183,18 +205,51 @@ async function seed() {
   // 6. Create phenology event types
   console.log("\nCreating phenology event types...");
   const eventTypeData = [
-    { nameEn: "Flowering", nameEs: "Floración", appliesTo: "plantae" as const, color: "#E91E63", icon: "flower" },
-    { nameEn: "Fruiting", nameEs: "Fructificación", appliesTo: "plantae" as const, color: "#FF9800", icon: "apple" },
-    { nameEn: "Leaf Out", nameEs: "Brotación", appliesTo: "plantae" as const, color: "#4CAF50", icon: "leaf" },
-    { nameEn: "Leaf Fall", nameEs: "Caída de hojas", appliesTo: "plantae" as const, color: "#795548", icon: "fallen-leaf" },
-    { nameEn: "Nesting", nameEs: "Anidación", appliesTo: "animalia" as const, color: "#2196F3", icon: "nest" },
-    { nameEn: "Dormancy", nameEs: "Dormancia", appliesTo: "all" as const, color: "#9E9E9E", icon: "sleep" },
+    {
+      nameEn: "Flowering",
+      nameEs: "Floración",
+      appliesTo: "plantae" as const,
+      color: "#E91E63",
+      icon: "flower",
+    },
+    {
+      nameEn: "Fruiting",
+      nameEs: "Fructificación",
+      appliesTo: "plantae" as const,
+      color: "#FF9800",
+      icon: "apple",
+    },
+    {
+      nameEn: "Leaf Out",
+      nameEs: "Brotación",
+      appliesTo: "plantae" as const,
+      color: "#4CAF50",
+      icon: "leaf",
+    },
+    {
+      nameEn: "Leaf Fall",
+      nameEs: "Caída de hojas",
+      appliesTo: "plantae" as const,
+      color: "#795548",
+      icon: "fallen-leaf",
+    },
+    {
+      nameEn: "Nesting",
+      nameEs: "Anidación",
+      appliesTo: "animalia" as const,
+      color: "#2196F3",
+      icon: "nest",
+    },
+    {
+      nameEn: "Dormancy",
+      nameEs: "Dormancia",
+      appliesTo: "all" as const,
+      color: "#9E9E9E",
+      icon: "sleep",
+    },
   ];
 
-  const insertedEventTypes = await db
-    .insert(phenologyEventTypes)
-    .values(eventTypeData)
-    .returning();
+  const insertedEventTypes = await db.insert(phenologyEventTypes).values(eventTypeData).returning();
   console.log(`  Created ${insertedEventTypes.length} phenology event types`);
 
   console.log("\nSeed complete!");
