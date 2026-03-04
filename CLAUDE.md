@@ -106,11 +106,12 @@ See `docs/learnings/002-ralph-loop-conventions.md` for full details.
 - **Commit format**: Conventional Commits enforced by commitlint.
   - `<type>(<scope>): <description>`
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `build`, `revert`
-  - Scopes: `web`, `mobile`, `api`, `db`, `types`, `i18n`, `tooling`, `ci`, `docs`, `deps`
+  - Scopes: `web`, `mobile`, `api`, `db`, `types`, `i18n`, `tooling`, `ci`, `docs`, `deps`, `release`
 - **Pre-commit**: Lefthook runs lint-staged (prettier + eslint on staged files).
 - **CI**: GitHub Actions — 4 parallel jobs: typecheck, lint, build, format.
 - **PR review**: `./scripts/review-pr.sh [PR_NUMBER]` for Claude-powered review.
 - **Formatting**: Prettier via `@sanctuary/prettier-config` (semi, trailingComma, printWidth: 100).
+- **Releases**: `multi-semantic-release` on merge to main — independent per-package versioning with auto-generated GitHub Releases.
 
 See `docs/decisions/008-cicd-workflow.md` for full rationale.
 

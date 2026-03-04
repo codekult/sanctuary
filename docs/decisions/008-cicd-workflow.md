@@ -55,7 +55,7 @@ Phase 1 code is complete. We need a professional development workflow that suppo
 
 ### Conventional Commit Scopes
 
-`web`, `mobile`, `api`, `db`, `types`, `i18n`, `tooling`, `ci`, `docs`, `deps`
+`web`, `mobile`, `api`, `db`, `types`, `i18n`, `tooling`, `ci`, `docs`, `deps`, `release`
 
 ## Consequences
 
@@ -65,3 +65,20 @@ Phase 1 code is complete. We need a professional development workflow that suppo
 - PRs get Claude review with project-specific criteria
 - Ralph Loop can commit freely as long as it uses conventional commit format
 - Developers must install hooks via `bun install` (postinstall runs `lefthook install`)
+
+## Release Automation
+
+### Options Considered
+
+| Option                     | Pros                                                                              | Cons                                                             |
+| -------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| **multi-semantic-release** | Wraps semantic-release, monorepo-aware, independent versioning, zero manual steps | Less maintained than alternatives                                |
+| **semantic-release** alone | Most popular                                                                      | No monorepo support — requires per-package config                |
+| **changesets**             | Well-maintained, explicit control                                                 | Manual workflow (`changeset add`) — incompatible with Ralph Loop |
+
+### Decision
+
+- **multi-semantic-release** — analyzes conventional commits per package, independent version bumps, zero manual steps
+- Runs on every merge to main via GitHub Actions
+- Creates GitHub Release per bumped package with auto-generated changelog
+- Packages with no changes are skipped
