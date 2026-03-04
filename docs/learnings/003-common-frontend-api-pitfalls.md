@@ -55,6 +55,32 @@ When integrating with external APIs (like iNaturalist), always include:
 
 **Rule:** Only move client initialization to module scope if the constructor is safe to call without browser APIs/env vars. When in doubt, keep it inside the component or a `useEffect`.
 
+## Prefer Server Components for Auth Data
+
+**Problem:** Using `useEffect` + `getUser()` in a client-component layout causes an extra client-side round-trip and a flash of empty state (e.g., sidebar shows no email until the promise resolves). The middleware already verified the user — this is redundant work.
+
+**Fix:** Make the layout a server component (`async function`) that reads user info via `createSupabaseServerClient()`, then passes it as props to a client shell component. This eliminates the flash and the extra request.
+
+**Pattern:**
+
+```tsx
+// layout.tsx — server component
+export default async function AdminLayout({ children }) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return <AdminShell userEmail={user?.email ?? null}>{children}</AdminShell>;
+}
+
+// admin-shell.tsx — client component ("use client")
+export function AdminShell({ userEmail, children }) {
+  /* interactive UI */
+}
+```
+
+**Rule:** If a layout only needs auth data for display (not for interactivity), read it server-side and pass down. Reserve client-side auth calls for mutations (sign-out, sign-in).
+
 ## zodResolver Type Depth Issue
 
 **Problem:** `zodResolver(schema)` causes "Type instantiation is excessively deep" with schemas that have many nullable fields. This is a known issue between `@hookform/resolvers`, `react-hook-form`, and `zod`.
