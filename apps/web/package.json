@@ -12,7 +12,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
+    "@hookform/resolvers": "3.10.0",
     "@sanctuary/api": "workspace:*",
     "@sanctuary/db": "workspace:*",
     "@sanctuary/i18n": "workspace:*",
@@ -38,7 +38,7 @@
     "sonner": "^2.0.7",
     "superjson": "^2.2.0",
     "tailwind-merge": "^3.5.0",
-    "zod": "^4.3.6"
+    "zod": "3.24.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",
