@@ -4,11 +4,32 @@ import { taxa, individuals } from "@sanctuary/db/schema";
 import { createTaxonSchema, updateTaxonSchema } from "@sanctuary/types";
 import { router, publicProcedure, protectedProcedure } from "../trpc.js";
 
+function buildTaxaConditions(input: { kingdom?: string; rank?: string; search?: string }) {
+  const conditions = [];
+  if (input.kingdom) conditions.push(eq(taxa.kingdom, input.kingdom));
+  if (input.rank) conditions.push(eq(taxa.taxonRank, input.rank));
+  if (input.search) {
+    conditions.push(
+      or(
+        ilike(taxa.scientificName, `%${input.search}%`),
+        ilike(taxa.commonNameEn, `%${input.search}%`),
+        ilike(taxa.commonNameEs, `%${input.search}%`),
+      ),
+    );
+  }
+  return conditions.length > 0
+    ? sql`${sql.join(
+        conditions.map((c) => sql`(${c})`),
+        sql` AND `,
+      )}`
+    : undefined;
+}
+
 export const taxonRouter = router({
   list: publicProcedure
     .input(
       z.object({
-        limit: z.number().min(1).max(100).default(50),
+        limit: z.number().min(1).max(100).default(25),
         offset: z.number().min(0).default(0),
         kingdom: z.string().optional(),
         rank: z.string().optional(),
@@ -16,35 +37,17 @@ export const taxonRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const conditions = [];
-      if (input.kingdom) conditions.push(eq(taxa.kingdom, input.kingdom));
-      if (input.rank) conditions.push(eq(taxa.taxonRank, input.rank));
-      if (input.search) {
-        conditions.push(
-          or(
-            ilike(taxa.scientificName, `%${input.search}%`),
-            ilike(taxa.commonNameEn, `%${input.search}%`),
-            ilike(taxa.commonNameEs, `%${input.search}%`),
-          ),
-        );
-      }
+      const where = buildTaxaConditions(input);
 
-      const where =
-        conditions.length > 0
-          ? sql`${sql.join(
-              conditions.map((c) => sql`(${c})`),
-              sql` AND `,
-            )}`
-          : undefined;
+      const [items, [countResult]] = await Promise.all([
+        ctx.db.select().from(taxa).where(where).limit(input.limit).offset(input.offset),
+        ctx.db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(taxa)
+          .where(where),
+      ]);
 
-      const results = await ctx.db
-        .select()
-        .from(taxa)
-        .where(where)
-        .limit(input.limit)
-        .offset(input.offset);
-
-      return results;
+      return { items, total: countResult?.count ?? 0 };
     }),
 
   getById: publicProcedure
