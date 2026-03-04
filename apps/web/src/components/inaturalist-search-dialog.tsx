@@ -100,6 +100,7 @@ export function INaturalistSearchDialog({ open, onOpenChange }: INaturalistSearc
           {results?.map((result) => (
             <div key={result.externalId} className="flex items-center gap-3 rounded-md border p-3">
               {result.thumbnailUrl ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={result.thumbnailUrl} alt="" className="h-12 w-12 rounded object-cover" />
               ) : (
                 <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">

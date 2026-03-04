@@ -97,6 +97,7 @@ export default function TaxaListPage() {
         cell: ({ row }) => {
           const url = row.original.thumbnailUrl;
           return url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img src={url} alt="" className="h-10 w-10 rounded object-cover" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">

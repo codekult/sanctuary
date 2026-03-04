@@ -78,8 +78,8 @@ export function TaxonForm({
 }: TaxonFormProps) {
   const [showTaxonomyDetails, setShowTaxonomyDetails] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const form = useForm<TaxonFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(taxonFormSchema as any) as any,
     defaultValues: {
       scientificName: "",
