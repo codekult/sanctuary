@@ -11,6 +11,7 @@ Set up the monorepo, database schema, authentication, API scaffolding, and seed 
 ## Scope
 
 ### Included
+
 - Turborepo monorepo with bun workspaces
 - Next.js 15 app scaffolding (App Router)
 - Expo/React Native app scaffolding (minimal — just the project shell)
@@ -24,6 +25,7 @@ Set up the monorepo, database schema, authentication, API scaffolding, and seed 
 - Dev tooling (ESLint, TypeScript strict, Prettier)
 
 ### Excluded
+
 - Any UI (Phase 2)
 - Phenology calendar visualization (Phase 4)
 - Mobile functionality beyond project shell (Phase 5)
@@ -105,6 +107,7 @@ sanctuary/
 All tables use `snake_case` column names. Drizzle maps to `camelCase` in TypeScript.
 
 #### taxa
+
 ```
 id              uuid        PK, default gen_random_uuid()
 scientific_name text        NOT NULL
@@ -129,6 +132,7 @@ updated_at      timestamptz NOT NULL  default now()
 ```
 
 #### individuals
+
 ```
 id                  uuid        PK
 taxon_id            uuid        NOT NULL FK → taxa
@@ -146,6 +150,7 @@ updated_at          timestamptz NOT NULL
 ```
 
 #### observations
+
 ```
 id                    uuid        PK
 taxon_id              uuid        NOT NULL FK → taxa
@@ -164,6 +169,7 @@ updated_at            timestamptz NOT NULL
 ```
 
 #### phenology_events
+
 ```
 id              uuid        PK
 individual_id   uuid        FK → individuals (nullable)
@@ -175,6 +181,7 @@ created_at      timestamptz NOT NULL
 ```
 
 #### phenology_event_types
+
 ```
 id          uuid    PK
 name_en     text    NOT NULL
@@ -186,6 +193,7 @@ created_at  timestamptz NOT NULL
 ```
 
 #### media
+
 ```
 id              uuid        PK
 observation_id  uuid        FK → observations (nullable)
@@ -201,6 +209,7 @@ created_at      timestamptz NOT NULL
 ```
 
 #### users
+
 ```
 id          uuid        PK (matches Supabase Auth user ID)
 email       text        NOT NULL UNIQUE
@@ -211,6 +220,7 @@ created_at  timestamptz NOT NULL
 ```
 
 #### properties
+
 ```
 id          uuid        PK
 name        text        NOT NULL
@@ -228,6 +238,7 @@ updated_at  timestamptz NOT NULL
 Each router provides standard CRUD + entity-specific queries:
 
 **taxon router**:
+
 - `taxon.list` — paginated, filterable by kingdom, rank, search text
 - `taxon.getById` — single taxon with related individuals count
 - `taxon.create` — manual entry
@@ -237,6 +248,7 @@ Each router provides standard CRUD + entity-specific queries:
 - `taxon.importFromExternal` — import a taxon from iNaturalist by ID
 
 **individual router**:
+
 - `individual.list` — paginated, filterable by taxon, status
 - `individual.getById` — with observation history
 - `individual.create`
@@ -244,6 +256,7 @@ Each router provides standard CRUD + entity-specific queries:
 - `individual.delete`
 
 **observation router**:
+
 - `observation.list` — paginated, filterable by taxon, individual, date range, observer
 - `observation.getById` — with media, phenology events
 - `observation.create`
@@ -251,6 +264,7 @@ Each router provides standard CRUD + entity-specific queries:
 - `observation.delete`
 
 **phenology router**:
+
 - `phenology.listEvents` — filterable by individual, taxon, event type, date range
 - `phenology.createEvent`
 - `phenology.listEventTypes`
@@ -258,12 +272,14 @@ Each router provides standard CRUD + entity-specific queries:
 - `phenology.updateEventType`
 
 **media router**:
+
 - `media.list` — by observation or individual
 - `media.create` — generate signed upload URL
 - `media.delete`
 - `media.reorder`
 
 **property router**:
+
 - `property.get` — single property (we only have one)
 - `property.update`
 
@@ -272,10 +288,12 @@ All mutation routes require authentication. Read routes are public but **coordin
 ### 4. iNaturalist API Integration
 
 Use the iNaturalist API v1 (public, no auth required for read):
+
 - `GET https://api.inaturalist.org/v1/taxa/autocomplete?q={query}` — search taxa
 - `GET https://api.inaturalist.org/v1/taxa/{id}` — get full taxon details
 
 Map iNaturalist response to our Taxon schema:
+
 - `name` → `scientific_name`
 - `preferred_common_name` → `common_name_en`
 - `names` array filtered by `locale=es` → `common_name_es`
@@ -302,6 +320,7 @@ Map iNaturalist response to our Taxon schema:
 ### 7. Seed Script
 
 The seed script should:
+
 1. Create one property (with sample coordinates and timezone)
 2. Import 10-15 diverse taxa from iNaturalist spanning multiple kingdoms (a tree, a bird, a fungus, an insect, a wildflower, etc.)
 3. Create 2-3 sample individuals (e.g., a named tree, a nesting bird)

@@ -10,12 +10,14 @@ An open standard maintained by TDWG (Biodiversity Information Standards) for sha
 ## Key Term Groups
 
 ### Occurrence (the event)
+
 - `occurrenceID` — globally unique identifier
 - `basisOfRecord` — HumanObservation, MachineObservation, LivingSpecimen, etc.
 - `recordedBy` — observer name(s)
 - `individualCount`, `sex`, `lifeStage`, `behavior`
 
 ### Taxon (what was observed)
+
 - `scientificName` — full accepted name (e.g., "Quercus robur L.")
 - `taxonRank` — species, genus, family, etc.
 - `kingdom`, `phylum`, `class`, `order`, `family`, `genus`
@@ -23,29 +25,32 @@ An open standard maintained by TDWG (Biodiversity Information Standards) for sha
 - `taxonID` — reference to authoritative record
 
 ### Location (where)
+
 - `decimalLatitude`, `decimalLongitude` (WGS84)
 - `coordinateUncertaintyInMeters`
 - `locality` — human-readable place description
 - `country`, `stateProvince`
 
 ### Time (when)
+
 - `eventDate` — ISO 8601 format
 - `year`, `month`, `day`
 
 ### Media
+
 - Handled via **Audubon Core** extension
 - `associatedMedia` — URIs to media files
 
 ## Sanctuary Mapping
 
-| Sanctuary Entity | DwC Equivalent | Notes |
-|---|---|---|
-| Observation | Occurrence | Direct mapping. `basisOfRecord` = HumanObservation |
-| Taxon | Taxon | Aligned fields. `externalId` maps to `taxonID` |
-| Individual | Organism | DwC has an Organism class for tracked individuals |
-| Media | Audubon Core | Media linked to occurrences |
-| PhenologyEvent | MeasurementOrFact | Lifecycle events map to the MeasurementOrFact extension |
-| Property | Location | Property = the locality context |
+| Sanctuary Entity | DwC Equivalent    | Notes                                                   |
+| ---------------- | ----------------- | ------------------------------------------------------- |
+| Observation      | Occurrence        | Direct mapping. `basisOfRecord` = HumanObservation      |
+| Taxon            | Taxon             | Aligned fields. `externalId` maps to `taxonID`          |
+| Individual       | Organism          | DwC has an Organism class for tracked individuals       |
+| Media            | Audubon Core      | Media linked to occurrences                             |
+| PhenologyEvent   | MeasurementOrFact | Lifecycle events map to the MeasurementOrFact extension |
+| Property         | Location          | Property = the locality context                         |
 
 ## Minimum Viable Record (for future GBIF export)
 

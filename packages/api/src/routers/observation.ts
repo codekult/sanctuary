@@ -33,9 +33,13 @@ export const observationRouter = router({
       if (input.dateFrom) conditions.push(gte(observations.observedAt, input.dateFrom));
       if (input.dateTo) conditions.push(lte(observations.observedAt, input.dateTo));
 
-      const where = conditions.length > 0
-        ? sql`${sql.join(conditions.map((c) => sql`(${c})`), sql` AND `)}`
-        : undefined;
+      const where =
+        conditions.length > 0
+          ? sql`${sql.join(
+              conditions.map((c) => sql`(${c})`),
+              sql` AND `,
+            )}`
+          : undefined;
 
       const results = await ctx.db
         .select()
@@ -57,10 +61,7 @@ export const observationRouter = router({
 
       if (!observation) return null;
 
-      const mediaItems = await ctx.db
-        .select()
-        .from(media)
-        .where(eq(media.observationId, input.id));
+      const mediaItems = await ctx.db.select().from(media).where(eq(media.observationId, input.id));
 
       const events = await ctx.db
         .select()
@@ -74,12 +75,10 @@ export const observationRouter = router({
       };
     }),
 
-  create: protectedProcedure
-    .input(createObservationSchema)
-    .mutation(async ({ ctx, input }) => {
-      const [observation] = await ctx.db.insert(observations).values(input).returning();
-      return observation;
-    }),
+  create: protectedProcedure.input(createObservationSchema).mutation(async ({ ctx, input }) => {
+    const [observation] = await ctx.db.insert(observations).values(input).returning();
+    return observation;
+  }),
 
   update: protectedProcedure
     .input(z.object({ id: z.string().uuid(), data: updateObservationSchema }))

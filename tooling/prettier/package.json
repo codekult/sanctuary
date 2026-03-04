@@ -1,0 +1,11 @@
+{
+  "name": "@sanctuary/prettier-config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "dependencies": {
+    "prettier": "^3.5.0"
+  }
+}

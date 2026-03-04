@@ -20,14 +20,16 @@ export const phenologyRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const conditions = [];
-      if (input.individualId)
-        conditions.push(eq(phenologyEvents.individualId, input.individualId));
-      if (input.eventTypeId)
-        conditions.push(eq(phenologyEvents.eventTypeId, input.eventTypeId));
+      if (input.individualId) conditions.push(eq(phenologyEvents.individualId, input.individualId));
+      if (input.eventTypeId) conditions.push(eq(phenologyEvents.eventTypeId, input.eventTypeId));
 
-      const where = conditions.length > 0
-        ? sql`${sql.join(conditions.map((c) => sql`(${c})`), sql` AND `)}`
-        : undefined;
+      const where =
+        conditions.length > 0
+          ? sql`${sql.join(
+              conditions.map((c) => sql`(${c})`),
+              sql` AND `,
+            )}`
+          : undefined;
 
       return ctx.db
         .select()
@@ -51,10 +53,7 @@ export const phenologyRouter = router({
   createEventType: protectedProcedure
     .input(createPhenologyEventTypeSchema)
     .mutation(async ({ ctx, input }) => {
-      const [eventType] = await ctx.db
-        .insert(phenologyEventTypes)
-        .values(input)
-        .returning();
+      const [eventType] = await ctx.db.insert(phenologyEventTypes).values(input).returning();
       return eventType;
     }),
 

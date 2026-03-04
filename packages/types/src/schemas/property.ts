@@ -14,10 +14,12 @@ export const propertySchema = z.object({
 
 export type Property = z.infer<typeof propertySchema>;
 
-export const updatePropertySchema = propertySchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-}).partial();
+export const updatePropertySchema = propertySchema
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .partial();
 
 export type UpdateProperty = z.infer<typeof updatePropertySchema>;

@@ -8,6 +8,7 @@
 The project has multiple applications (web, mobile) and shared code (types, validation, API definitions, database schema). We need a strategy for code organization and sharing.
 
 Options considered:
+
 - **Turborepo** — build system for JS/TS monorepos. Incremental builds, remote caching, task orchestration. Minimal config.
 - **Nx** — more feature-rich monorepo tool. Dependency graph visualization, code generation, plugin system. Heavier, steeper learning curve.
 - **pnpm workspaces (no build tool)** — simple workspace linking. No build orchestration or caching.

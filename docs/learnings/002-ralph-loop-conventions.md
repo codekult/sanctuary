@@ -32,24 +32,30 @@ Keep prompt files in `docs/prompts/`. Structure:
 # Phase N: Title
 
 ## Context
+
 List files to read before each iteration (CLAUDE.md, proposal, spec, etc.)
 
 ## Task
+
 One-sentence goal.
 
 ## Iteration Protocol
+
 1. Assess progress (build, typecheck, check what files exist)
 2. Pick next incomplete step from Implementation Order
 3. Implement and verify
 4. If all steps pass Quality Checklist → output <promise>...</promise>
 
 ## Implementation Order
+
 Sequential steps with verify gates.
 
 ## Constraints
+
 Non-negotiable rules (runtime, conventions, privacy, etc.)
 
 ## Quality Checklist
+
 Concrete commands that must all pass before completion.
 ```
 

@@ -8,6 +8,7 @@
 The mobile app and web backoffice both need to communicate with the same backend logic. We need an API layer that serves both clients with type safety.
 
 Options considered:
+
 - **tRPC** — end-to-end type-safe RPC. No code generation, no schema files. Types flow from server to client via TypeScript inference. Works with Next.js API routes.
 - **REST (Next.js API routes)** — simple, well-understood. No automatic type sharing — requires manual typing or code generation (e.g., OpenAPI + codegen).
 - **GraphQL** — flexible queries, strong schema. Heavy setup (schema definition, resolvers, codegen). Overkill for a single-consumer API.

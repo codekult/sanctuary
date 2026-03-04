@@ -3,7 +3,9 @@ import { taxa } from "./taxon.js";
 
 export const individuals = pgTable("individuals", {
   id: uuid("id").primaryKey().defaultRandom(),
-  taxonId: uuid("taxon_id").notNull().references(() => taxa.id),
+  taxonId: uuid("taxon_id")
+    .notNull()
+    .references(() => taxa.id),
   nickname: text("nickname"),
   descriptionEn: text("description_en"),
   descriptionEs: text("description_es"),

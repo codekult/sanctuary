@@ -8,6 +8,7 @@
 We need a TypeScript ORM to interact with PostgreSQL. The ORM must support type-safe queries, migrations, and work well with Supabase's Postgres instance.
 
 Options considered:
+
 - **Drizzle ORM** — lightweight, SQL-like API, excellent TypeScript inference, schema-as-code, fast migrations. Generates raw SQL that's easy to inspect.
 - **Prisma** — most popular TS ORM. Declarative schema (`.prisma` file), auto-generated client. Heavier runtime, query engine binary, slower cold starts on serverless.
 - **Kysely** — type-safe query builder (not a full ORM). Very lightweight but requires more manual work for migrations and relations.

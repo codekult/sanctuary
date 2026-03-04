@@ -12,7 +12,9 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@sanctuary/db": "workspace:*",
@@ -24,9 +26,11 @@
   },
   "devDependencies": {
     "@sanctuary/eslint-config": "workspace:*",
+    "@sanctuary/prettier-config": "workspace:*",
     "@sanctuary/tsconfig": "workspace:*",
     "@types/bun": "latest",
     "eslint": "^9.20.0",
     "typescript": "^5.7.0"
-  }
+  },
+  "prettier": "@sanctuary/prettier-config"
 }

@@ -6,10 +6,12 @@
 ## Context
 
 The web layer serves two distinct purposes:
+
 1. **Backoffice** — authenticated admin interface for managing data (interactive, dynamic)
 2. **Public library** — read-only catalogue for public browsing (needs SEO, fast loads)
 
 Options considered:
+
 - **Next.js (App Router)** — SSR for public pages (SEO), server components for performance, server actions for mutations, API routes for mobile. One framework covers both use cases.
 - **Remix** — similar SSR capabilities, good data loading patterns. Smaller ecosystem, less deployment flexibility.
 - **SPA (Vite + React)** — simple for backoffice, but poor SEO for public library without additional SSR setup.

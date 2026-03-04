@@ -12,15 +12,19 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@sanctuary/eslint-config": "workspace:*",
+    "@sanctuary/prettier-config": "workspace:*",
     "@sanctuary/tsconfig": "workspace:*",
     "eslint": "^9.20.0",
     "typescript": "^5.7.0"
-  }
+  },
+  "prettier": "@sanctuary/prettier-config"
 }

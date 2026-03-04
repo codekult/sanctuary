@@ -7,7 +7,9 @@
     "dev": "expo start",
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@sanctuary/api": "workspace:*",
@@ -22,9 +24,11 @@
   },
   "devDependencies": {
     "@sanctuary/eslint-config": "workspace:*",
+    "@sanctuary/prettier-config": "workspace:*",
     "@sanctuary/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",
     "eslint": "^9.20.0",
     "typescript": "^5.7.0"
-  }
+  },
+  "prettier": "@sanctuary/prettier-config"
 }

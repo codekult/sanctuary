@@ -8,6 +8,7 @@
 We need: PostgreSQL database, user authentication (multi-admin with invite flow), and S3-compatible image storage. These could be provisioned separately or via a unified platform.
 
 Options considered:
+
 - **Supabase** — managed Postgres + Auth + Storage + Realtime in one platform. Generous free tier. Self-hostable if needed later.
 - **Neon (DB) + Auth.js + Cloudflare R2** — best-of-breed for each concern. More flexible, but more integration work and more accounts to manage.
 - **PlanetScale + Clerk + S3** — MySQL-based (not Postgres), adds cost for auth.
