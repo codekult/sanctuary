@@ -19,7 +19,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+    // Created here (not at component/module scope) to avoid running during static prerender.
+    // createBrowserClient returns a singleton internally, so this is cheap.
     const supabase = createSupabaseBrowserClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
       email,
