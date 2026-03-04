@@ -100,6 +100,20 @@ See `docs/learnings/002-ralph-loop-conventions.md` for full details.
 - **Learnings**: Named descriptively by topic. Include the problem, what was tried, and what worked.
 - **Commit messages**: Imperative mood, concise. Reference proposal/ADR numbers when relevant.
 
+## CI/CD & Git Workflow
+
+- **Branch model**: Feature branches → PR to `main`. No direct pushes to `main`.
+- **Commit format**: Conventional Commits enforced by commitlint.
+  - `<type>(<scope>): <description>`
+  - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `build`, `revert`
+  - Scopes: `web`, `mobile`, `api`, `db`, `types`, `i18n`, `tooling`, `ci`, `docs`, `deps`
+- **Pre-commit**: Lefthook runs lint-staged (prettier + eslint on staged files).
+- **CI**: GitHub Actions — 4 parallel jobs: typecheck, lint, build, format.
+- **PR review**: `./scripts/review-pr.sh [PR_NUMBER]` for Claude-powered review.
+- **Formatting**: Prettier via `@sanctuary/prettier-config` (semi, trailingComma, printWidth: 100).
+
+See `docs/decisions/008-cicd-workflow.md` for full rationale.
+
 ## Data Model
 
 Core entities: Taxon, Individual, Observation, PhenologyEvent, PhenologyEventType, Media, User, Property.

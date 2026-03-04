@@ -19,3 +19,4 @@ Status: `Proposed` → `Accepted` → `Superseded` (if replaced by a later ADR).
 | 005 | [Turborepo Monorepo](./005-turborepo-monorepo.md)      | Accepted |
 | 006 | [tRPC API Layer](./006-trpc-api-layer.md)              | Accepted |
 | 007 | [Bun Runtime](./007-bun-runtime.md)                    | Accepted |
+| 008 | [CI/CD Workflow](./008-cicd-workflow.md)               | Accepted |
