@@ -1,0 +1,76 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "noResults": "No results found"
+  },
+  "entities": {
+    "taxon": "Taxon",
+    "taxa": "Taxa",
+    "individual": "Individual",
+    "individuals": "Individuals",
+    "observation": "Observation",
+    "observations": "Observations",
+    "phenologyEvent": "Phenology Event",
+    "phenologyEvents": "Phenology Events",
+    "media": "Media",
+    "property": "Property",
+    "user": "User",
+    "users": "Users"
+  },
+  "enums": {
+    "taxonRank": {
+      "kingdom": "Kingdom",
+      "phylum": "Phylum",
+      "class": "Class",
+      "order": "Order",
+      "family": "Family",
+      "genus": "Genus",
+      "species": "Species",
+      "subspecies": "Subspecies",
+      "variety": "Variety"
+    },
+    "individualStatus": {
+      "alive": "Alive",
+      "dead": "Dead",
+      "unknown": "Unknown",
+      "removed": "Removed"
+    },
+    "lifeStage": {
+      "egg": "Egg",
+      "larva": "Larva",
+      "juvenile": "Juvenile",
+      "adult": "Adult",
+      "unknown": "Unknown"
+    },
+    "observationStatus": {
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "mediaType": {
+      "image": "Image",
+      "audio": "Audio",
+      "video": "Video"
+    },
+    "userRole": {
+      "admin": "Admin",
+      "contributor": "Contributor"
+    },
+    "phenologyAppliesTo": {
+      "all": "All",
+      "animalia": "Animals",
+      "plantae": "Plants",
+      "fungi": "Fungi"
+    },
+    "sex": {
+      "male": "Male",
+      "female": "Female",
+      "unknown": "Unknown"
+    }
+  }
+}

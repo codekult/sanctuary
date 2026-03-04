@@ -1,0 +1,32 @@
+{
+  "name": "@sanctuary/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@sanctuary/db": "workspace:*",
+    "@sanctuary/types": "workspace:*",
+    "@trpc/server": "^11.0.0",
+    "drizzle-orm": "^0.38.0",
+    "superjson": "^2.2.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@sanctuary/eslint-config": "workspace:*",
+    "@sanctuary/tsconfig": "workspace:*",
+    "@types/bun": "latest",
+    "eslint": "^9.20.0",
+    "typescript": "^5.7.0"
+  }
+}

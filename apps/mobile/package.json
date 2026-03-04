@@ -1,0 +1,30 @@
+{
+  "name": "@sanctuary/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/App.tsx",
+  "scripts": {
+    "dev": "expo start",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "@sanctuary/api": "workspace:*",
+    "@sanctuary/types": "workspace:*",
+    "@trpc/client": "^11.0.0",
+    "@trpc/react-query": "^11.0.0",
+    "@tanstack/react-query": "^5.66.0",
+    "expo": "~52.0.0",
+    "react": "^19.0.0",
+    "react-native": "^0.77.0",
+    "superjson": "^2.2.0"
+  },
+  "devDependencies": {
+    "@sanctuary/eslint-config": "workspace:*",
+    "@sanctuary/tsconfig": "workspace:*",
+    "@types/react": "^19.0.0",
+    "eslint": "^9.20.0",
+    "typescript": "^5.7.0"
+  }
+}

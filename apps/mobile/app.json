@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Sanctuary",
+    "slug": "sanctuary",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "sanctuary",
+    "platforms": ["ios", "android"]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@sanctuary/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "import": "./dist/schema/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "seed": "bun run src/seed.ts"
+  },
+  "dependencies": {
+    "@sanctuary/types": "workspace:*",
+    "drizzle-orm": "^0.38.0",
+    "postgres": "^3.4.0"
+  },
+  "devDependencies": {
+    "@sanctuary/eslint-config": "workspace:*",
+    "@sanctuary/tsconfig": "workspace:*",
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.30.0",
+    "eslint": "^9.20.0",
+    "typescript": "^5.7.0"
+  }
+}

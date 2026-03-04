@@ -1,0 +1,76 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "noResults": "No se encontraron resultados"
+  },
+  "entities": {
+    "taxon": "Taxón",
+    "taxa": "Taxa",
+    "individual": "Individuo",
+    "individuals": "Individuos",
+    "observation": "Observación",
+    "observations": "Observaciones",
+    "phenologyEvent": "Evento Fenológico",
+    "phenologyEvents": "Eventos Fenológicos",
+    "media": "Multimedia",
+    "property": "Propiedad",
+    "user": "Usuario",
+    "users": "Usuarios"
+  },
+  "enums": {
+    "taxonRank": {
+      "kingdom": "Reino",
+      "phylum": "Filo",
+      "class": "Clase",
+      "order": "Orden",
+      "family": "Familia",
+      "genus": "Género",
+      "species": "Especie",
+      "subspecies": "Subespecie",
+      "variety": "Variedad"
+    },
+    "individualStatus": {
+      "alive": "Vivo",
+      "dead": "Muerto",
+      "unknown": "Desconocido",
+      "removed": "Eliminado"
+    },
+    "lifeStage": {
+      "egg": "Huevo",
+      "larva": "Larva",
+      "juvenile": "Juvenil",
+      "adult": "Adulto",
+      "unknown": "Desconocido"
+    },
+    "observationStatus": {
+      "draft": "Borrador",
+      "published": "Publicado"
+    },
+    "mediaType": {
+      "image": "Imagen",
+      "audio": "Audio",
+      "video": "Video"
+    },
+    "userRole": {
+      "admin": "Administrador",
+      "contributor": "Contribuidor"
+    },
+    "phenologyAppliesTo": {
+      "all": "Todos",
+      "animalia": "Animales",
+      "plantae": "Plantas",
+      "fungi": "Hongos"
+    },
+    "sex": {
+      "male": "Macho",
+      "female": "Hembra",
+      "unknown": "Desconocido"
+    }
+  }
+}
