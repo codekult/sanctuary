@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,29 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { KINGDOMS, TAXON_RANKS } from "@sanctuary/types";
+import { KINGDOMS, TAXON_RANKS, createTaxonSchema, type CreateTaxon } from "@sanctuary/types";
 
-const taxonFormSchema = z.object({
-  scientificName: z.string().min(1),
-  commonNameEn: z.string().nullable(),
-  commonNameEs: z.string().nullable(),
-  taxonRank: z.enum(TAXON_RANKS),
-  kingdom: z.string().min(1),
-  phylum: z.string().nullable(),
-  class: z.string().nullable(),
-  order: z.string().nullable(),
-  family: z.string().nullable(),
-  genus: z.string().nullable(),
-  specificEpithet: z.string().nullable(),
-  externalId: z.string().nullable(),
-  externalSource: z.string().nullable(),
-  descriptionEn: z.string().nullable(),
-  descriptionEs: z.string().nullable(),
-  conservationStatus: z.string().nullable(),
-  thumbnailUrl: z.string().nullable(),
-});
-
-type TaxonFormValues = z.infer<typeof taxonFormSchema>;
+type TaxonFormValues = CreateTaxon;
 
 interface TaxonFormProps {
   defaultValues?: Partial<TaxonFormValues>;
@@ -68,8 +47,7 @@ export function TaxonForm({
 
   const form = useForm<TaxonFormValues>({
     // Type instantiation too deep with nullable fields — known @hookform/resolvers + zod issue
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(taxonFormSchema as any) as any,
+    resolver: zodResolver(createTaxonSchema) as unknown as Resolver<TaxonFormValues>,
     defaultValues: {
       scientificName: "",
       commonNameEn: null,

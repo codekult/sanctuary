@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   useReactTable,
@@ -9,7 +9,7 @@ import {
   type PaginationState,
 } from "@tanstack/react-table";
 import { MoreHorizontal, Plus, Download, Leaf } from "lucide-react";
-import { trpc } from "@/lib/trpc/client";
+import { trpc, type RouterOutputs } from "@/lib/trpc/client";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
@@ -33,23 +33,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { KINGDOMS, TAXON_RANKS } from "@sanctuary/types";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
-interface TaxonRow {
-  id: string;
-  scientificName: string;
-  commonNameEn: string | null;
-  taxonRank: string;
-  kingdom: string;
-  externalSource: string | null;
-  thumbnailUrl: string | null;
-}
+type TaxonRow = RouterOutputs["taxon"]["list"]["items"][number];
 
 const PAGE_SIZE = 25;
 
 export default function TaxaListPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [kingdomFilter, setKingdomFilter] = useState<string>("");
   const [rankFilter, setRankFilter] = useState<string>("");
   const [pagination, setPagination] = useState<PaginationState>({
@@ -57,16 +50,11 @@ export default function TaxaListPage() {
     pageSize: PAGE_SIZE,
   });
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearch(value);
-    clearTimeout(searchTimeoutRef.current);
-    searchTimeoutRef.current = setTimeout(() => {
-      setDebouncedSearch(value);
-      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-    }, 300);
-  }, []);
+  // Reset to first page when search changes
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [debouncedSearch]);
 
   const { data, isLoading } = trpc.taxon.list.useQuery({
     limit: pagination.pageSize,
@@ -131,7 +119,12 @@ export default function TaxaListPage() {
         cell: ({ row }) => (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Row actions"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -185,7 +178,7 @@ export default function TaxaListPage() {
         <>
           <DataTableToolbar
             searchValue={search}
-            onSearchChange={handleSearchChange}
+            onSearchChange={setSearch}
             searchPlaceholder="Search by name..."
           >
             <Select
@@ -249,7 +242,9 @@ export default function TaxaListPage() {
         </>
       )}
 
-      <INaturalistSearchDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
+      {importDialogOpen && (
+        <INaturalistSearchDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
+      )}
     </>
   );
 }

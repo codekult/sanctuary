@@ -1,32 +1,33 @@
 import { z } from "zod";
-import { eq, ilike, or, sql, asc } from "drizzle-orm";
+import { eq, and, ilike, or, sql, asc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { taxa, individuals } from "@sanctuary/db/schema";
 import { createTaxonSchema, updateTaxonSchema, taxonRankEnum } from "@sanctuary/types";
 import { router, publicProcedure, protectedProcedure } from "../trpc.js";
+
+function escapeIlike(s: string): string {
+  return s.replace(/[%_\\]/g, "\\$&");
+}
 
 function buildTaxaConditions(input: { kingdom?: string; rank?: string; search?: string }) {
   const conditions = [];
   if (input.kingdom) conditions.push(eq(taxa.kingdom, input.kingdom));
   if (input.rank) conditions.push(eq(taxa.taxonRank, input.rank));
   if (input.search) {
+    const escaped = escapeIlike(input.search);
     conditions.push(
       or(
-        ilike(taxa.scientificName, `%${input.search}%`),
-        ilike(taxa.commonNameEn, `%${input.search}%`),
-        ilike(taxa.commonNameEs, `%${input.search}%`),
+        ilike(taxa.scientificName, `%${escaped}%`),
+        ilike(taxa.commonNameEn, `%${escaped}%`),
+        ilike(taxa.commonNameEs, `%${escaped}%`),
       ),
     );
   }
-  return conditions.length > 0
-    ? sql`${sql.join(
-        conditions.map((c) => sql`(${c})`),
-        sql` AND `,
-      )}`
-    : undefined;
+  return and(...conditions);
 }
 
 export const taxonRouter = router({
+  // Intentionally public — will serve the public species library (Phase 3)
   list: publicProcedure
     .input(
       z.object({
@@ -57,17 +58,19 @@ export const taxonRouter = router({
       return { items, total: countResult?.count ?? 0 };
     }),
 
+  // Intentionally public — will serve the public species library (Phase 3)
   getById: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const [taxon] = await ctx.db.select().from(taxa).where(eq(taxa.id, input.id));
+      const [[taxon], [count]] = await Promise.all([
+        ctx.db.select().from(taxa).where(eq(taxa.id, input.id)),
+        ctx.db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(individuals)
+          .where(eq(individuals.taxonId, input.id)),
+      ]);
 
       if (!taxon) return null;
-
-      const [count] = await ctx.db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(individuals)
-        .where(eq(individuals.taxonId, input.id));
 
       return { ...taxon, individualsCount: count?.count ?? 0 };
     }),
@@ -91,6 +94,16 @@ export const taxonRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
+      const [dep] = await ctx.db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(individuals)
+        .where(eq(individuals.taxonId, input.id));
+      if (dep && dep.count > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `Cannot delete: ${dep.count} individual(s) are linked to this taxon.`,
+        });
+      }
       await ctx.db.delete(taxa).where(eq(taxa.id, input.id));
       return { success: true };
     }),
@@ -112,7 +125,7 @@ export const taxonRouter = router({
     }),
 
   importFromExternal: protectedProcedure
-    .input(z.object({ externalId: z.string() }))
+    .input(z.object({ externalId: z.string().regex(/^\d+$/, "Must be a numeric ID") }))
     .mutation(async ({ ctx, input }) => {
       const response = await fetch(`https://api.inaturalist.org/v1/taxa/${input.externalId}`);
       if (!response.ok) {

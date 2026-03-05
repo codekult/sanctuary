@@ -33,7 +33,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/admin/taxa");
+    router.replace("/admin/taxa");
     router.refresh();
   }
 

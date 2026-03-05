@@ -23,7 +23,8 @@ export const KINGDOMS = [
   "Bacteria",
   "Archaea",
 ] as const;
-export type Kingdom = (typeof KINGDOMS)[number];
+export const kingdomEnum = z.enum(KINGDOMS);
+export type Kingdom = z.infer<typeof kingdomEnum>;
 
 export const individualStatusEnum = z.enum(["alive", "dead", "unknown", "removed"]);
 export type IndividualStatus = z.infer<typeof individualStatusEnum>;

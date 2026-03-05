@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { type TaxonRank } from "@sanctuary/types";
+import { taxonRankEnum, kingdomEnum } from "@sanctuary/types";
 import { trpc } from "@/lib/trpc/client";
 import { PageHeader } from "@/components/page-header";
 import { TaxonForm } from "@/components/taxon-form";
@@ -75,8 +75,8 @@ export default function EditTaxonPage() {
             scientificName: taxon.scientificName,
             commonNameEn: taxon.commonNameEn,
             commonNameEs: taxon.commonNameEs,
-            taxonRank: taxon.taxonRank as TaxonRank,
-            kingdom: taxon.kingdom,
+            taxonRank: taxonRankEnum.parse(taxon.taxonRank),
+            kingdom: kingdomEnum.parse(taxon.kingdom),
             phylum: taxon.phylum,
             class: taxon.class,
             order: taxon.order,

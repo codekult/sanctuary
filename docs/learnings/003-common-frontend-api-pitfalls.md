@@ -2,23 +2,24 @@
 
 Patterns that surfaced during the Phase 2a taxa management PR review. These are easy to introduce and easy to miss — check for them in every new feature.
 
-## Debounce in React Event Handlers
+## Debounce in React: Always Use a Hook
 
-**Problem:** A debounce pattern that returns a cleanup function only works inside `useEffect`. When called from an `onChange` handler, the returned cleanup is discarded, so every keystroke schedules a new timeout and none are cleared.
+**Problem:** Manual debounce with `useRef` + `setTimeout` in event handlers is error-prone: easy to forget unmount cleanup (causing stale state updates), and duplicated across components.
 
-**Fix:** Store the timeout in a `useRef` and call `clearTimeout` at the top of the callback:
+**Fix:** Extract a `useDebouncedValue` hook that handles cleanup automatically via `useEffect`:
 
 ```ts
-const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-const handleSearchChange = useCallback((value: string) => {
-  setValue(value);
-  clearTimeout(timeoutRef.current);
-  timeoutRef.current = setTimeout(() => setDebouncedValue(value), 300);
-}, []);
+function useDebouncedValue<T>(value: T, delay = 300): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
 ```
 
-**Prevention:** When writing any debounce logic, ask: "Where is the cleanup called?" If it's not `useEffect`, use `useRef`.
+**Rule:** Never write manual debounce logic in components. Always use this hook. It handles cleanup on unmount automatically.
 
 ## Paginated Queries Need Deterministic Ordering
 
@@ -85,4 +86,83 @@ export function AdminShell({ userEmail, children }) {
 
 **Problem:** `zodResolver(schema)` causes "Type instantiation is excessively deep" with schemas that have many nullable fields. This is a known issue between `@hookform/resolvers`, `react-hook-form`, and `zod`.
 
-**Workaround:** Use `zodResolver(schema as any) as any` with an explanatory comment. The runtime behavior is correct; only the type inference breaks.
+**Workaround:** Use `zodResolver(schema) as unknown as Resolver<FormValues>` — narrower and more intentional than double `as any`. Import `Resolver` from `react-hook-form`.
+
+## ILIKE Pattern Injection
+
+**Problem:** Drizzle parameterizes ILIKE values (no SQL injection), but `%` and `_` are ILIKE wildcards. A search for `%` returns all rows; `___` matches any 3-char name.
+
+**Fix:** Escape ILIKE meta-characters before interpolation:
+
+```ts
+function escapeIlike(s: string): string {
+  return s.replace(/[%_\\]/g, "\\$&");
+}
+```
+
+**Rule:** Always escape user input used in ILIKE/LIKE patterns.
+
+## URL Path Construction with User Input (SSRF)
+
+**Problem:** Interpolating user input into URL paths (e.g., `fetch(\`https://api.example.com/v1/${input.id}\`)`) allows path traversal (`../../other-endpoint`) or query injection (`123?param=value`).
+
+**Fix:** Validate the input format strictly. For numeric IDs: `z.string().regex(/^\d+$/)`.
+
+**Rule:** Any user input that becomes part of a URL path must be validated against a strict allowlist or pattern.
+
+## syncUser Performance: Upsert + In-Memory Cache
+
+**Problem:** Running a SELECT on every authenticated tRPC request to check if a user exists adds unnecessary DB round-trips.
+
+**Fix:** Use `INSERT ... ON CONFLICT DO NOTHING` (one query, idempotent) plus a module-level `Set<string>` to skip the DB entirely for repeat requests. The Set resets on cold start — acceptable for invite-only.
+
+## Non-Null Assertions on Auth Data
+
+**Problem:** `user.email!` passes `undefined` into the DB if a user signs in via a provider without email.
+
+**Fix:** Guard with `if (!user.email) return createContext(db, null)` before using the value.
+
+**Rule:** Never use `!` on Supabase auth fields — they can be absent depending on the auth provider.
+
+## Form Schemas: Derive, Don't Duplicate
+
+**Problem:** Defining a form schema separately from the shared Zod schema causes silent drift — fields can be added to the API schema without the form knowing.
+
+**Fix:** Import and use the shared `createTaxonSchema` directly in the form. This ensures validation is consistent between client and server.
+
+**Rule:** Form schemas should derive from (or be identical to) the shared API schemas in `@sanctuary/types`.
+
+## Use Inferred Types from tRPC, Not Manual Interfaces
+
+**Problem:** Manually defining `interface TaxonRow { ... }` for API data silently drifts if the API changes.
+
+**Fix:** Use `type TaxonRow = RouterOutputs["taxon"]["list"]["items"][number]`. Export `RouterOutputs` from the tRPC client setup.
+
+## Database Indexes for Common Query Patterns
+
+**Rule:** Always add indexes for:
+
+- Columns used in `WHERE` filters (kingdom, taxon_rank)
+- Columns used in `ORDER BY` (scientific_name)
+- Composite unique constraints for business rules (external_id + external_source)
+
+Add them when creating the table, not as an afterthought.
+
+## Delete Mutations: Check for Dependents
+
+**Problem:** Deleting a parent record with FK-dependent children throws an opaque DB error.
+
+**Fix:** Pre-check for dependents and return a clear user-facing message:
+
+```ts
+const [dep] = await ctx.db.select({ count: sql`count(*)::int` }).from(children).where(...);
+if (dep && dep.count > 0) throw new TRPCError({ code: "PRECONDITION_FAILED", message: "..." });
+```
+
+## A11y: Icon-Only Buttons Need Labels
+
+**Rule:** Any `<Button>` with only an icon (no visible text) must have `aria-label`. Disabled nav items should use `<button disabled>` not `<span>` for proper semantics.
+
+## Login Page: Use `router.replace` After Auth
+
+**Rule:** After successful login, use `router.replace("/admin/...")` not `router.push(...)` so `/login` doesn't stay in the back-navigation stack.

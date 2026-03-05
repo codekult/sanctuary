@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Leaf, Loader2, Search } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ interface INaturalistSearchDialogProps {
 
 export function INaturalistSearchDialog({ open, onOpenChange }: INaturalistSearchDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(searchQuery, 300);
   const [importingId, setImportingId] = useState<string | null>(null);
 
   const utils = trpc.useUtils();
@@ -38,7 +39,6 @@ export function INaturalistSearchDialog({ open, onOpenChange }: INaturalistSearc
       toast.success("Taxon imported successfully");
       onOpenChange(false);
       setSearchQuery("");
-      setDebouncedQuery("");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -47,14 +47,6 @@ export function INaturalistSearchDialog({ open, onOpenChange }: INaturalistSearc
       setImportingId(null);
     },
   });
-
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-    clearTimeout(searchTimeoutRef.current);
-    searchTimeoutRef.current = setTimeout(() => setDebouncedQuery(value), 300);
-  }, []);
 
   function handleImport(externalId: string) {
     setImportingId(externalId);
@@ -74,7 +66,7 @@ export function INaturalistSearchDialog({ open, onOpenChange }: INaturalistSearc
           <Input
             placeholder="Search species..."
             value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
             autoFocus
           />
@@ -99,43 +91,52 @@ export function INaturalistSearchDialog({ open, onOpenChange }: INaturalistSearc
             </p>
           )}
 
-          {results?.map((result) => (
-            <div key={result.externalId} className="flex items-center gap-3 rounded-md border p-3">
-              {result.thumbnailUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={result.thumbnailUrl} alt="" className="h-12 w-12 rounded object-cover" />
-              ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">
-                  <Leaf className="h-5 w-5 text-muted-foreground" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="truncate font-medium italic">{result.scientificName}</p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {result.commonNameEn ?? "No common name"}
-                </p>
-                <div className="mt-1 flex gap-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {result.taxonRank}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    {result.kingdom}
-                  </Badge>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => handleImport(result.externalId!)}
-                disabled={importingId === result.externalId}
+          {results
+            ?.filter((result) => result.externalId != null)
+            .map((result) => (
+              <div
+                key={result.externalId}
+                className="flex items-center gap-3 rounded-md border p-3"
               >
-                {importingId === result.externalId ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                {result.thumbnailUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={result.thumbnailUrl}
+                    alt=""
+                    className="h-12 w-12 rounded object-cover"
+                  />
                 ) : (
-                  "Import"
+                  <div className="flex h-12 w-12 items-center justify-center rounded bg-muted">
+                    <Leaf className="h-5 w-5 text-muted-foreground" />
+                  </div>
                 )}
-              </Button>
-            </div>
-          ))}
+                <div className="flex-1 min-w-0">
+                  <p className="truncate font-medium italic">{result.scientificName}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {result.commonNameEn ?? "No common name"}
+                  </p>
+                  <div className="mt-1 flex gap-1">
+                    <Badge variant="secondary" className="text-xs">
+                      {result.taxonRank}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {result.kingdom}
+                    </Badge>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => handleImport(result.externalId!)}
+                  disabled={importingId === result.externalId}
+                >
+                  {importingId === result.externalId ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Import"
+                  )}
+                </Button>
+              </div>
+            ))}
         </div>
       </DialogContent>
     </Dialog>
