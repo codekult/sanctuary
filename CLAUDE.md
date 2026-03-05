@@ -103,9 +103,11 @@ For phases that can run overnight, use `/ralph-loop` (from the ralph-wiggum plug
 
 See `docs/learnings/002-ralph-loop-conventions.md` for full details.
 
-### Available Review Agents
+### Review Configuration
 
-For thorough PR reviews, use these compound-engineering agents (via `/workflows:review` or directly):
+Review agents and Vercel skills are configured in `compound-engineering.local.md` (project root). This file is read by `/workflows:review` and `/workflows:work`.
+
+**Review agents** (compound-engineering):
 
 - `kieran-typescript-reviewer` — TypeScript quality and patterns
 - `security-sentinel` — security audit (OWASP, auth, secrets)
@@ -113,6 +115,14 @@ For thorough PR reviews, use these compound-engineering agents (via `/workflows:
 - `pattern-recognition-specialist` — codebase consistency
 - `code-simplicity-reviewer` — YAGNI and simplification
 - `architecture-strategist` — structural review
+
+**Vercel skills** (applied to all React/Next.js code):
+
+- `vercel-react-best-practices` — 58 performance rules for React/Next.js
+- `vercel-composition-patterns` — compound components, state lifting, avoiding boolean props
+- `web-design-guidelines` — UI compliance, accessibility, UX best practices
+
+To reconfigure: run the compound-engineering `setup` skill.
 
 ### PR Review with Plugin
 
