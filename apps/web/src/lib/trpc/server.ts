@@ -1,7 +1,19 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter, createContext } from "@sanctuary/api";
-import { db } from "@sanctuary/db";
+import { db, users } from "@sanctuary/db";
 import { createSupabaseServerClient } from "../supabase/server";
+
+const syncedUsers = new Set<string>();
+
+async function syncUser(id: string, email: string) {
+  if (syncedUsers.has(id)) return;
+  const name = email.split("@")[0] ?? "user";
+  await db
+    .insert(users)
+    .values({ id, email, name, role: "contributor" })
+    .onConflictDoNothing({ target: users.id });
+  syncedUsers.add(id);
+}
 
 export async function handleTRPC(req: Request) {
   return fetchRequestHandler({
@@ -14,7 +26,12 @@ export async function handleTRPC(req: Request) {
         data: { user },
       } = await supabase.auth.getUser();
 
-      const session = user ? { userId: user.id, email: user.email! } : null;
+      if (!user || !user.email) {
+        return createContext(db, null);
+      }
+
+      await syncUser(user.id, user.email);
+      const session = { userId: user.id, email: user.email };
 
       return createContext(db, session);
     },

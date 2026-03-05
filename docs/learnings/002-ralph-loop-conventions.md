@@ -1,32 +1,52 @@
-# Ralph Loop Conventions
+# Ralph Loop & Plugin Conventions
 
-## Problem
+## Plugins Overview
 
-Running autonomous implementation via the Ralph Loop plugin requires careful setup to avoid blocking on permission prompts or failing at invocation time. Our first attempt (Phase 1) hit two issues:
+This project uses two complementary Claude Code plugins:
 
-1. **`$(cat file)` in the skill invocation** — the Skill tool rejects shell command substitution in Bash arguments, so `$(cat docs/prompts/phase1-foundation.md)` never reached the setup script.
-2. **Permission prompts** — every Bash tool call that wasn't pre-approved paused the loop waiting for human input, defeating the purpose of unattended execution.
+| Plugin                   | Source                 | Commands                                                                                                                                   | Purpose                                                                  |
+| ------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| **compound-engineering** | EveryInc (third-party) | `/workflows:brainstorm`, `/workflows:plan`, `/workflows:work`, `/workflows:review`, `/workflows:compound`, `/lfg`, `/slfg`, `/deepen-plan` | Structured workflow orchestration, specialized review agents, swarm mode |
+| **ralph-wiggum**         | Anthropic (official)   | `/ralph-loop`, `/cancel-ralph`                                                                                                             | Iterative autonomous loops with fresh context per iteration              |
 
-## What We Tried
+**They are NOT the same thing.** `/workflows:work` executes a plan within one session. `/ralph-loop` runs repeated iterations with fresh context via a Stop hook.
 
-- Passing the entire prompt file content via `$(cat ...)` — rejected by the permission checker.
-- Running without pre-approved permissions — required manual approval for `bun install`, file writes, etc.
+## When to Use Each
 
-## Solution
+| Scenario                                    | Command                                         |
+| ------------------------------------------- | ----------------------------------------------- |
+| Interactive feature work with quality gates | `/workflows:work`                               |
+| Overnight unattended implementation         | `/ralph-loop`                                   |
+| Full pipeline: plan → build → review → ship | `/lfg` (sequential) or `/slfg` (parallel swarm) |
+| PR code review with multi-agent analysis    | `/workflows:review`                             |
+| Document learnings from solved problems     | `/workflows:compound`                           |
 
-### Invocation Pattern
+## Ralph Loop Mechanics
 
-The ralph-loop skill accepts the prompt as **positional words**, not piped input. Use a short pointer as the prompt arg, and put the full spec in a file:
+The `/ralph-loop` command (from ralph-wiggum) works via a **Stop hook**:
+
+1. You invoke `/ralph-loop "prompt" --max-iterations N --completion-promise "DONE"`
+2. The setup script writes the prompt to `.claude/ralph-loop.local.md`
+3. Claude works on the task and eventually tries to exit
+4. The **Stop hook** fires → checks for completion promise in transcript
+5. If not complete: increments iteration counter, feeds the same prompt back
+6. If complete (promise found or max iterations reached): allows exit
+
+**Key insight:** The prompt never changes between iterations. Claude sees its prior work via modified files and git history, giving it fresh context each cycle.
+
+## Invocation Pattern
+
+The ralph-loop prompt arg is a **short pointer**, not the full spec:
 
 ```
 /ralph-loop Read and implement docs/prompts/phase2-backoffice.md exactly. Assess progress each iteration and continue. --max-iterations 30 --completion-promise "PHASE2_COMPLETE"
 ```
 
-The skill writes the prompt text to `.claude/ralph-loop.local.md`. On each iteration, the Stop hook feeds this text back as the next turn's input. Claude then reads the referenced file(s) for the full spec.
+**Do NOT use `$(cat file)`** — shell substitution is rejected by the permission checker. Put the full spec in `docs/prompts/` and reference it by path.
 
-### Prompt File Structure
+## Prompt File Structure
 
-Keep prompt files in `docs/prompts/`. Structure:
+Keep prompt files in `docs/prompts/`:
 
 ```markdown
 # Phase N: Title
@@ -59,9 +79,9 @@ Non-negotiable rules (runtime, conventions, privacy, etc.)
 Concrete commands that must all pass before completion.
 ```
 
-### Permissions
+## Permissions
 
-Pre-approve tools in `.claude/settings.local.json` before launching. Required patterns for a typical build phase:
+Pre-approve Bash patterns in `.claude/settings.local.json` before launching unattended loops. Required patterns for a typical build phase:
 
 ```json
 {
@@ -84,19 +104,34 @@ Pre-approve tools in `.claude/settings.local.json` before launching. Required pa
 }
 ```
 
-The `Write`, `Edit`, `Read`, `Glob`, `Grep` tools are auto-approved by default in most permission modes. The `Bash` tool is the one that requires explicit patterns.
+## /slfg — Full Autonomous Pipeline with Swarm
 
-### How Ralph Loop Works (Internals)
+`/slfg` orchestrates the entire feature lifecycle with parallelism:
 
-1. `/ralph-loop` runs `setup-ralph-loop.sh` → writes prompt + state to `.claude/ralph-loop.local.md`
-2. Claude works on the task and eventually tries to exit
-3. A **Stop hook** fires → reads the state file → checks for completion promise in transcript
-4. If not complete: increments iteration, feeds the prompt back as the next turn
-5. If complete (promise found or max iterations reached): allows exit
+1. (Optional) Activate ralph-loop if available
+2. `/workflows:plan` — create implementation plan
+3. `/deepen-plan` — enhance with research agents
+4. `/workflows:work` in **swarm mode** — parallel agent subteams
+5. `/workflows:review` + `/test-browser` — run in parallel
+6. `/resolve_todo_parallel` — resolve findings
+7. `/feature-video` — record walkthrough
 
-To monitor: `head -10 .claude/ralph-loop.local.md`
-To cancel: `/cancel-ralph`
+## Compound Engineering Review Agents
 
-## Key Insight
+Available specialized agents for thorough reviews (invoked via `/workflows:review` or directly as Agent subagent types):
 
-The ralph-loop prompt arg is a **pointer**, not the payload. Keep it under ~200 words. Reference files by path for the full spec — Claude reads them fresh each iteration, which also means it picks up any changes you make to spec files mid-loop.
+- `kieran-typescript-reviewer` — TS quality, type safety, patterns
+- `security-sentinel` — OWASP, auth, secrets, input validation
+- `performance-oracle` — bottlenecks, DB queries, memory, scalability
+- `pattern-recognition-specialist` — codebase consistency, naming, duplication
+- `code-simplicity-reviewer` — YAGNI violations, simplification
+- `architecture-strategist` — structural compliance, design integrity
+
+## Lessons Learned
+
+1. **Plugin confusion:** "compound-engineering" and "ralph-wiggum" are separate plugins from different authors. Don't confuse `/workflows:work` (single-session plan execution) with `/ralph-loop` (multi-iteration fresh-context loops).
+2. **`$(cat file)` is rejected** — use a short pointer as the prompt arg, reference files by path.
+3. **Pre-approve permissions** — any unapproved Bash pattern blocks the loop waiting for human input.
+4. **Always set `--max-iterations`** — primary safety mechanism. The completion promise uses exact string matching.
+5. **Use `/workflows:review` for PRs** — it runs parallel review agents in worktrees, much more thorough than manual review.
+6. **Use `/workflows:compound` for learnings** — it follows a structured format for documenting solved problems.

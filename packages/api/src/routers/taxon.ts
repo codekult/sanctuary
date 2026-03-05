@@ -1,14 +1,37 @@
 import { z } from "zod";
-import { eq, ilike, or, sql } from "drizzle-orm";
+import { eq, and, ilike, or, sql, asc } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { taxa, individuals } from "@sanctuary/db/schema";
-import { createTaxonSchema, updateTaxonSchema } from "@sanctuary/types";
+import { createTaxonSchema, updateTaxonSchema, taxonRankEnum } from "@sanctuary/types";
 import { router, publicProcedure, protectedProcedure } from "../trpc.js";
 
+function escapeIlike(s: string): string {
+  return s.replace(/[%_\\]/g, "\\$&");
+}
+
+function buildTaxaConditions(input: { kingdom?: string; rank?: string; search?: string }) {
+  const conditions = [];
+  if (input.kingdom) conditions.push(eq(taxa.kingdom, input.kingdom));
+  if (input.rank) conditions.push(eq(taxa.taxonRank, input.rank));
+  if (input.search) {
+    const escaped = escapeIlike(input.search);
+    conditions.push(
+      or(
+        ilike(taxa.scientificName, `%${escaped}%`),
+        ilike(taxa.commonNameEn, `%${escaped}%`),
+        ilike(taxa.commonNameEs, `%${escaped}%`),
+      ),
+    );
+  }
+  return and(...conditions);
+}
+
 export const taxonRouter = router({
+  // Intentionally public — will serve the public species library (Phase 3)
   list: publicProcedure
     .input(
       z.object({
-        limit: z.number().min(1).max(100).default(50),
+        limit: z.number().min(1).max(100).default(25),
         offset: z.number().min(0).default(0),
         kingdom: z.string().optional(),
         rank: z.string().optional(),
@@ -16,48 +39,38 @@ export const taxonRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const conditions = [];
-      if (input.kingdom) conditions.push(eq(taxa.kingdom, input.kingdom));
-      if (input.rank) conditions.push(eq(taxa.taxonRank, input.rank));
-      if (input.search) {
-        conditions.push(
-          or(
-            ilike(taxa.scientificName, `%${input.search}%`),
-            ilike(taxa.commonNameEn, `%${input.search}%`),
-            ilike(taxa.commonNameEs, `%${input.search}%`),
-          ),
-        );
-      }
+      const where = buildTaxaConditions(input);
 
-      const where =
-        conditions.length > 0
-          ? sql`${sql.join(
-              conditions.map((c) => sql`(${c})`),
-              sql` AND `,
-            )}`
-          : undefined;
+      const [items, [countResult]] = await Promise.all([
+        ctx.db
+          .select()
+          .from(taxa)
+          .where(where)
+          .orderBy(asc(taxa.scientificName))
+          .limit(input.limit)
+          .offset(input.offset),
+        ctx.db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(taxa)
+          .where(where),
+      ]);
 
-      const results = await ctx.db
-        .select()
-        .from(taxa)
-        .where(where)
-        .limit(input.limit)
-        .offset(input.offset);
-
-      return results;
+      return { items, total: countResult?.count ?? 0 };
     }),
 
+  // Intentionally public — will serve the public species library (Phase 3)
   getById: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const [taxon] = await ctx.db.select().from(taxa).where(eq(taxa.id, input.id));
+      const [[taxon], [count]] = await Promise.all([
+        ctx.db.select().from(taxa).where(eq(taxa.id, input.id)),
+        ctx.db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(individuals)
+          .where(eq(individuals.taxonId, input.id)),
+      ]);
 
       if (!taxon) return null;
-
-      const [count] = await ctx.db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(individuals)
-        .where(eq(individuals.taxonId, input.id));
 
       return { ...taxon, individualsCount: count?.count ?? 0 };
     }),
@@ -81,30 +94,79 @@ export const taxonRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
+      const [dep] = await ctx.db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(individuals)
+        .where(eq(individuals.taxonId, input.id));
+      if (dep && dep.count > 0) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `Cannot delete: ${dep.count} individual(s) are linked to this taxon.`,
+        });
+      }
       await ctx.db.delete(taxa).where(eq(taxa.id, input.id));
       return { success: true };
     }),
 
-  searchExternal: publicProcedure
+  searchExternal: protectedProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input }) => {
       const response = await fetch(
         `https://api.inaturalist.org/v1/taxa/autocomplete?q=${encodeURIComponent(input.query)}&per_page=10`,
       );
+      if (!response.ok) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Failed to search iNaturalist. Please try again later.",
+        });
+      }
       const data = (await response.json()) as INatAutocompleteResponse;
       return data.results.map(mapINatTaxon);
     }),
 
   importFromExternal: protectedProcedure
-    .input(z.object({ externalId: z.string() }))
+    .input(z.object({ externalId: z.string().regex(/^\d+$/, "Must be a numeric ID") }))
     .mutation(async ({ ctx, input }) => {
       const response = await fetch(`https://api.inaturalist.org/v1/taxa/${input.externalId}`);
+      if (!response.ok) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Failed to fetch taxon from iNaturalist. Please try again later.",
+        });
+      }
       const data = (await response.json()) as INatTaxonResponse;
       const result = data.results[0];
       if (!result) return null;
 
+      // Check for existing taxon with same external ID
+      const [existing] = await ctx.db
+        .select({ id: taxa.id })
+        .from(taxa)
+        .where(
+          sql`${taxa.externalId} = ${String(result.id)} AND ${taxa.externalSource} = 'inaturalist'`,
+        );
+      if (existing) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "This taxon has already been imported.",
+        });
+      }
+
       const mapped = mapINatTaxon(result);
-      const [taxon] = await ctx.db.insert(taxa).values(mapped).returning();
+
+      // Validate that the rank is supported
+      const rankParse = taxonRankEnum.safeParse(mapped.taxonRank);
+      if (!rankParse.success) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Unsupported taxon rank "${mapped.taxonRank}". Only standard ranks are supported.`,
+        });
+      }
+
+      const [taxon] = await ctx.db
+        .insert(taxa)
+        .values({ ...mapped, taxonRank: rankParse.data })
+        .returning();
       return taxon;
     }),
 });

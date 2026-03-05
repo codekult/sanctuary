@@ -56,23 +56,42 @@ sanctuary/
 
 ## Workflow — Compound Engineering
 
-Follow this loop for every non-trivial feature:
+This project uses two Claude Code plugins that work together:
 
-1. **Brainstorm** — explore approaches (`/brainstorm`)
+- **compound-engineering** (EveryInc) — workflow orchestration, specialized agents, and review
+- **ralph-wiggum** (Anthropic) — iterative autonomous loops with fresh context per iteration
+
+### Core Workflow
+
+Follow this loop for every non-trivial feature, using the plugin slash commands:
+
+1. **Brainstorm** — `/workflows:brainstorm` — explore approaches collaboratively
 2. **Propose** — write a scoped proposal in `docs/proposals/`
 3. **Decide** — write ADRs in `docs/decisions/` for key choices
-4. **Plan** — create an implementation plan (`/plan`)
-5. **Implement** — write code against the proposal (`/work` or `/ralph-loop`)
-6. **Review** — check work quality (`/review`, `/simplify`)
-7. **Compound** — document learnings in `docs/learnings/` (`/compound`)
+4. **Plan** — `/workflows:plan` — create a structured implementation plan
+5. **Deepen** — `/deepen-plan` — enhance plan with parallel research agents
+6. **Implement** — `/workflows:work` (interactive) or `/ralph-loop` (unattended)
+7. **Review** — `/workflows:review` — multi-agent code review with worktrees
+8. **Compound** — `/workflows:compound` — document learnings for future sessions
 
-### Ralph Loop for Autonomous Implementation
+### Autonomous Modes
 
-For phases that can run unattended, use a Ralph Loop:
+| Command           | Plugin               | When to use                                                                          |
+| ----------------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `/workflows:work` | compound-engineering | Interactive implementation with quality gates and incremental commits                |
+| `/ralph-loop`     | ralph-wiggum         | Unattended iterative loops — each iteration gets fresh context, reads file/git state |
+| `/lfg`            | compound-engineering | Full pipeline: plan → deepen → work → review → ship (sequential)                     |
+| `/slfg`           | compound-engineering | Same as `/lfg` but with swarm mode for parallel execution                            |
+
+### Ralph Loop for Unattended Implementation
+
+For phases that can run overnight, use `/ralph-loop` (from the ralph-wiggum plugin):
 
 1. Write a **prompt file** in `docs/prompts/` (see existing prompts for format)
 2. Ensure `.claude/settings.local.json` has the required Bash permissions pre-approved
 3. Invoke: `/ralph-loop <short pointer to prompt file> --max-iterations N --completion-promise "PHASEX_COMPLETE"`
+
+**How it works:** A Stop hook intercepts exit, checks for the completion promise, and re-feeds the same prompt. Each iteration starts with fresh context but sees prior work via files and git history.
 
 **Prompt file conventions:**
 
@@ -83,6 +102,31 @@ For phases that can run unattended, use a Ralph Loop:
 - Keep the prompt file self-contained: context paths, implementation order, constraints, quality gates.
 
 See `docs/learnings/002-ralph-loop-conventions.md` for full details.
+
+### Review Configuration
+
+Review agents and Vercel skills are configured in `compound-engineering.local.md` (project root). This file is read by `/workflows:review` and `/workflows:work`.
+
+**Review agents** (compound-engineering):
+
+- `kieran-typescript-reviewer` — TypeScript quality and patterns
+- `security-sentinel` — security audit (OWASP, auth, secrets)
+- `performance-oracle` — performance bottlenecks and complexity
+- `pattern-recognition-specialist` — codebase consistency
+- `code-simplicity-reviewer` — YAGNI and simplification
+- `architecture-strategist` — structural review
+
+**Vercel skills** (applied to all React/Next.js code):
+
+- `vercel-react-best-practices` — 58 performance rules for React/Next.js
+- `vercel-composition-patterns` — compound components, state lifting, avoiding boolean props
+- `web-design-guidelines` — UI compliance, accessibility, UX best practices
+
+To reconfigure: run the compound-engineering `setup` skill.
+
+### PR Review with Plugin
+
+Prefer `/workflows:review` over manual review. It runs multi-agent analysis in worktrees. For addressing review comments, use the `pr-comment-resolver` agent.
 
 ## Coding Conventions
 
@@ -109,7 +153,7 @@ See `docs/learnings/002-ralph-loop-conventions.md` for full details.
   - Scopes: `web`, `mobile`, `api`, `db`, `types`, `i18n`, `tooling`, `ci`, `docs`, `deps`, `release`
 - **Pre-commit**: Lefthook runs lint-staged (prettier + eslint on staged files).
 - **CI**: GitHub Actions — 4 parallel jobs: typecheck, lint, build, format.
-- **PR review**: `./scripts/review-pr.sh [PR_NUMBER]` for Claude-powered review.
+- **PR review**: `/workflows:review` (compound-engineering plugin) or `./scripts/review-pr.sh [PR_NUMBER]`.
 - **Formatting**: Prettier via `@sanctuary/prettier-config` (semi, trailingComma, printWidth: 100).
 - **Releases**: `multi-semantic-release` on merge to main — independent per-package versioning with auto-generated GitHub Releases.
 

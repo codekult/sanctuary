@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { taxonRankEnum } from "../enums.js";
+import { taxonRankEnum, kingdomEnum } from "../enums.js";
 
 export const taxonSchema = z.object({
   id: z.string().uuid(),
@@ -7,7 +7,7 @@ export const taxonSchema = z.object({
   commonNameEn: z.string().nullable(),
   commonNameEs: z.string().nullable(),
   taxonRank: taxonRankEnum,
-  kingdom: z.string().min(1),
+  kingdom: kingdomEnum,
   phylum: z.string().nullable(),
   class: z.string().nullable(),
   order: z.string().nullable(),
